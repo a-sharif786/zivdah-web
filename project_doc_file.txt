@@ -1,0 +1,110 @@
+======================For company server============
+#credentails
+Zivdah Fronend Server
+Static IP : 68.183.247.196
+Public IP : 168.144.17.9
+Private IP : 10.1.0.2
+Username  : root
+Password : 56Jhdeou7~!8=U
+
+
+
+
+#on filezilla
+mkdir -p /var/www/html
+
+#on putty
+sudo mkdir -p /var/www/html
+
+
+
+
+
+Since you have root access to the server, you can deploy your React app directly to /var/www/html.
+
+1. Connect to the server
+
+Using SSH:
+
+ssh root@68.183.247.196
+
+Enter the password when prompted.
+
+2. Check if Nginx is installed
+nginx -v
+
+If it isn't installed:
+
+apt update
+apt install nginx -y
+systemctl enable nginx
+systemctl start nginx
+3. Build your React project
+
+On your local machine:
+
+npm install
+npm run build
+Vite: output folder is dist
+Create React App: output folder is build
+4. Upload the build
+Using FileZilla
+Host: 68.183.247.196
+Username: root
+Password: (your password)
+Protocol: SFTP (port 22)
+
+Go to:
+
+/var/www/html
+
+Delete the existing files, then upload all the files inside the dist (or build) folder. Don't upload the dist folder itself.
+
+5. Configure Nginx
+
+Open:
+
+nano /etc/nginx/sites-available/default
+
+Replace the server block with:
+
+server {
+    listen 80;
+    server_name _;
+
+    root /var/www/html;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
+
+Save (Ctrl+O, Enter) and exit (Ctrl+X).
+
+6. Test and restart Nginx
+nginx -t
+systemctl restart nginx
+7. Open the website
+
+Visit:
+
+http://68.183.247.196
+
+or your domain if it points to this server.
+
+If FileZilla shows:
+/var/www/html: No such file or directory
+
+Run:
+
+ls -la /var/www
+
+If the directory doesn't exist:
+
+mkdir -p /var/www/html
+
+Then restart Nginx:
+
+systemctl restart nginx
+
