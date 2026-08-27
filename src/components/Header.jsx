@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
-import { CATEGORY_META, CATEGORY_VALUES } from '../utils/categoryMeta'
+import { categoryApi } from '../api/productApi'
 import './Header.css'
 
 const navLinks = [
@@ -18,7 +18,15 @@ export default function Header() {
   const [query, setQuery] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
   const [accountOpen, setAccountOpen] = useState(false)
+  const [categories, setCategories] = useState([])
   const navigate = useNavigate()
+
+  // Live categories table (GET /category/getAll) — display only, not yet linked to
+  // product filtering (see Home.jsx / Shop.jsx comments), so these link to /shop
+  // unfiltered rather than /shop/:category.
+  useEffect(() => {
+    categoryApi.getAllPublic().then(setCategories).catch(() => setCategories([]))
+  }, [])
 
   const handleSearch = (e) => {
     e.preventDefault()
@@ -122,9 +130,16 @@ export default function Header() {
             ))}
           </ul>
           <div className="nav-cats">
-            {CATEGORY_VALUES.map((cat) => (
-              <Link key={cat} to={`/shop/${cat}`} onClick={() => setMenuOpen(false)}>
-                {CATEGORY_META[cat].icon} {CATEGORY_META[cat].label}
+            {categories.map((cat) => (
+              <Link key={cat.id} to="/shop" onClick={() => setMenuOpen(false)}>
+                {cat.imageUrl && (
+                  <img
+                    src={cat.imageUrl}
+                    alt=""
+                    style={{ width: 16, height: 16, objectFit: 'cover', borderRadius: 3, verticalAlign: 'middle', marginRight: 5 }}
+                  />
+                )}
+                {cat.name}
               </Link>
             ))}
           </div>

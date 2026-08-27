@@ -26,3 +26,13 @@ export const productApi = {
 export const bannerApi = {
   getAllPublic: () => apiClient.get(`${BANNER_BASE}/getAll`).then((r) => r.data),
 };
+
+// The normalized categories table/CRUD resource (id, name, slug, parentId, imageUrl,
+// active) — distinct from productApi.getCategories(), which returns the fixed
+// ProductCategory enum (VEGETABLE/FRUIT/MILK/PULSE/GROCERY) that products still
+// filter by. These new categories aren't linked to any product yet.
+const CATEGORY_BASE = '/restful/v1/api/category';
+
+export const categoryApi = {
+  getAllPublic: () => apiClient.get(`${CATEGORY_BASE}/getAll`).then((r) => r.data),
+};

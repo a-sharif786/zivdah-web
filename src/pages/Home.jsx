@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import ProductCard from '../components/ProductCard'
-import { productApi, bannerApi } from '../api/productApi'
-import { CATEGORY_META, CATEGORY_VALUES } from '../utils/categoryMeta'
+import { productApi, bannerApi, categoryApi } from '../api/productApi'
 import { formatCurrency } from '../utils/format'
 import './Home.css'
 
@@ -12,6 +11,10 @@ export default function Home() {
   const [featured, setFeatured] = useState([])
   const [deals, setDeals] = useState([])
   const [email, setEmail] = useState('')
+  // From the new categories CRUD table (GET /category/getAll) — id/name/imageUrl,
+  // not the old ProductCategory enum. Not yet linked to any product (no category_id
+  // on products), so cards below are display-only and link to /shop unfiltered.
+  const [categories, setCategories] = useState([])
 
   useEffect(() => {
     bannerApi.getAllPublic().then(setBanners).catch(() => setBanners([]))
@@ -20,6 +23,7 @@ export default function Home() {
       .getAll(0, 50)
       .then((list) => setDeals(list.filter((p) => p.discountPrice != null)))
       .catch(() => setDeals([]))
+    categoryApi.getAllPublic().then(setCategories).catch(() => setCategories([]))
   }, [])
 
   useEffect(() => {
@@ -89,10 +93,30 @@ export default function Home() {
             <Link to="/shop" className="view-all">View All <i className="fas fa-chevron-right"></i></Link>
           </div>
           <div className="categories-grid">
-            {CATEGORY_VALUES.map((cat) => (
-              <Link to={`/shop/${cat}`} key={cat} className="cat-card" style={{ background: CATEGORY_META[cat].color }}>
-                <span className="cat-icon">{CATEGORY_META[cat].icon}</span>
-                <span className="cat-name">{CATEGORY_META[cat].label}</span>
+            {categories.map((cat) => (
+              // Links to /shop unfiltered, not /shop/:category — these categories
+              // aren't wired to product filtering yet (see state comment above).
+              <Link
+                to="/shop"
+                key={cat.id}
+                className="cat-card"
+                style={
+                  cat.imageUrl
+                    ? {
+                      backgroundImage: `linear-gradient(rgba(0,0,0,0.15), rgba(0,0,0,0.45)), url(${cat.imageUrl})`,
+                      backgroundSize: 'cover',
+                      height: '200px',
+                      width: '100%',
+                      backgroundPosition: 'center',
+                    }
+                    : {
+                      background: '#78909c',
+                      height: '200px',
+                      width: '100%',
+                    }
+                }
+              >
+                <span className="cat-name" style={{ color: '#fff' }}>{cat.name}</span>
               </Link>
             ))}
           </div>

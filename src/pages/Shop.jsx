@@ -81,7 +81,14 @@ export default function Shop() {
                     className={selectedCategory === cat ? 'active' : ''}
                     onClick={() => setSelectedCategory(cat)}
                   >
-                    <span>{CATEGORY_META[cat].icon} {CATEGORY_META[cat].label}</span>
+                    <span>
+                      <img
+                        src={CATEGORY_META[cat].icon}
+                        alt=""
+                        style={{ width: 16, height: 16, objectFit: 'cover', borderRadius: 3, verticalAlign: 'middle', marginRight: 6 }}
+                      />
+                      {CATEGORY_META[cat].label}
+                    </span>
                   </button>
                 </li>
               ))}

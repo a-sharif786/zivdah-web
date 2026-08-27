@@ -18,26 +18,42 @@ export default function Checkout() {
   const [placing, setPlacing] = useState(false)
   const [error, setError] = useState(null)
   const [saveAddress, setSaveAddress] = useState(false)
+  const [addresses, setAddresses] = useState([])
+  // Id of the selected saved address, or 'new' to show the manual-entry fields.
+  // Starts 'new' so the form still works before the address list loads / for
+  // users with no saved addresses.
+  const [selectedAddressId, setSelectedAddressId] = useState('new')
   const [form, setForm] = useState({
     firstName: '', lastName: '', email: user?.email ?? '', phone: user?.mobile ?? '',
     address: '', city: '', state: '', pincode: '',
     payment: 'cod',
   })
 
+  const applyAddress = (a) => {
+    setForm((f) => ({
+      ...f,
+      address: [a.addressLine1, a.addressLine2].filter(Boolean).join(', '),
+      city: a.city,
+      state: a.state,
+      pincode: a.pinCode,
+    }))
+  }
+
+  const selectNewAddress = () => {
+    setSelectedAddressId('new')
+    setForm((f) => ({ ...f, address: '', city: '', state: '', pincode: '' }))
+  }
+
   useEffect(() => {
     const [firstName = '', ...rest] = (user?.name ?? '').split(' ')
     setForm((f) => ({ ...f, firstName, lastName: rest.join(' '), email: user?.email ?? f.email, phone: user?.mobile ?? f.phone }))
 
-    userApi.getAddresses(0, 1).then((addresses) => {
-      const a = addresses[0]
-      if (a) {
-        setForm((f) => ({
-          ...f,
-          address: [a.addressLine1, a.addressLine2].filter(Boolean).join(', '),
-          city: a.city,
-          state: a.state,
-          pincode: a.pinCode,
-        }))
+    userApi.getAddresses(0, 20).then((list) => {
+      setAddresses(list)
+      const def = list.find((a) => a.isDefault) ?? list[0]
+      if (def) {
+        setSelectedAddressId(def.id)
+        applyAddress(def)
       }
     }).catch(() => {})
   }, [user])
@@ -53,7 +69,7 @@ export default function Checkout() {
     setError(null)
     setPlacing(true)
     try {
-      if (saveAddress) {
+      if (selectedAddressId === 'new' && saveAddress) {
         await userApi.addAddress({
           addressLine1: form.address,
           city: form.city,
@@ -168,28 +184,60 @@ export default function Checkout() {
                     <input name="phone" value={form.phone} onChange={handleChange} placeholder="+91 98765 43210" required />
                   </div>
                 </div>
-                <div className="form-group">
-                  <label>Full Address *</label>
-                  <textarea name="address" value={form.address} onChange={handleChange} rows={3} placeholder="House No., Street, Area..." required />
-                </div>
-                <div className="form-row-3">
+                {addresses.length > 0 && (
                   <div className="form-group">
-                    <label>City *</label>
-                    <input name="city" value={form.city} onChange={handleChange} placeholder="Mumbai" required />
+                    <label>Delivery Address *</label>
+                    <div className="address-list">
+                      {addresses.map((a) => (
+                        <label key={a.id} className={`address-option ${selectedAddressId === a.id ? 'selected' : ''}`}>
+                          <input
+                            type="radio"
+                            name="savedAddress"
+                            checked={selectedAddressId === a.id}
+                            onChange={() => { setSelectedAddressId(a.id); applyAddress(a) }}
+                          />
+                          <div>
+                            <strong>
+                              {[a.addressLine1, a.addressLine2].filter(Boolean).join(', ')}
+                              {a.isDefault && <span className="address-default-badge">Default</span>}
+                            </strong>
+                            <div>{a.city}, {a.state} - {a.pinCode}</div>
+                          </div>
+                        </label>
+                      ))}
+                      <label className={`address-option ${selectedAddressId === 'new' ? 'selected' : ''}`}>
+                        <input type="radio" name="savedAddress" checked={selectedAddressId === 'new'} onChange={selectNewAddress} />
+                        <div><strong><i className="fas fa-plus"></i> Add a new address</strong></div>
+                      </label>
+                    </div>
                   </div>
-                  <div className="form-group">
-                    <label>State *</label>
-                    <input name="state" value={form.state} onChange={handleChange} placeholder="Maharashtra" required />
-                  </div>
-                  <div className="form-group">
-                    <label>Pincode *</label>
-                    <input name="pincode" value={form.pincode} onChange={handleChange} placeholder="400001" required pattern="[0-9]{6}" />
-                  </div>
-                </div>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13 }}>
-                  <input type="checkbox" checked={saveAddress} onChange={(e) => setSaveAddress(e.target.checked)} style={{ width: 'auto' }} />
-                  Save this address to my account
-                </label>
+                )}
+                {selectedAddressId === 'new' && (
+                  <>
+                    <div className="form-group">
+                      <label>Full Address *</label>
+                      <textarea name="address" value={form.address} onChange={handleChange} rows={3} placeholder="House No., Street, Area..." required />
+                    </div>
+                    <div className="form-row-3">
+                      <div className="form-group">
+                        <label>City *</label>
+                        <input name="city" value={form.city} onChange={handleChange} placeholder="Mumbai" required />
+                      </div>
+                      <div className="form-group">
+                        <label>State *</label>
+                        <input name="state" value={form.state} onChange={handleChange} placeholder="Maharashtra" required />
+                      </div>
+                      <div className="form-group">
+                        <label>Pincode *</label>
+                        <input name="pincode" value={form.pincode} onChange={handleChange} placeholder="400001" required pattern="[0-9]{6}" />
+                      </div>
+                    </div>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13 }}>
+                      <input type="checkbox" checked={saveAddress} onChange={(e) => setSaveAddress(e.target.checked)} style={{ width: 'auto' }} />
+                      Save this address to my account
+                    </label>
+                  </>
+                )}
               </div>
             )}
 

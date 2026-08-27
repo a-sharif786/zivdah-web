@@ -146,6 +146,51 @@
 
 .payment-option.selected i { color: var(--primary); }
 
+.address-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.address-option {
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--gray);
+  transition: var(--transition);
+}
+
+.address-option input { margin-top: 3px; }
+
+.address-option div { display: flex; flex-direction: column; gap: 4px; }
+
+.address-option strong { font-size: 14px; font-weight: 600; color: var(--dark); display: flex; align-items: center; gap: 8px; }
+
+.address-option.selected {
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+
+.address-option.selected strong { color: var(--primary); }
+
+.address-default-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--primary);
+  background: var(--primary-light);
+  border-radius: 20px;
+  padding: 1px 8px;
+}
+
+.address-option.selected .address-default-badge { background: rgba(255,255,255,0.6); }
+
 .card-fields { margin-top: 16px; }
 
 .form-actions {
