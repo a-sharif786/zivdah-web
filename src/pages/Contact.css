@@ -106,17 +106,19 @@
   gap: 20px;
 }
 
-.map-placeholder {
-  background: var(--primary-light);
+.map-embed {
   border-radius: var(--radius);
-  padding: 50px 30px;
-  text-align: center;
-  border: 2px dashed var(--primary);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  border: 1.5px solid var(--border);
 }
 
-.map-placeholder i { font-size: 48px; color: var(--primary); margin-bottom: 14px; display: block; }
-.map-placeholder h4 { font-size: 18px; color: var(--dark); margin-bottom: 8px; }
-.map-placeholder p { font-size: 14px; color: var(--gray); }
+.map-embed iframe {
+  width: 100%;
+  height: 320px;
+  border: 0;
+  display: block;
+}
 
 .social-contact {
   background: white;

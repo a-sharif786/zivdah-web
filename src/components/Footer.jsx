@@ -49,9 +49,9 @@ export default function Footer() {
           <div className="footer-col">
             <h4>Contact Us</h4>
             <ul className="contact-info">
-              <li><i className="fas fa-map-marker-alt"></i> 123 Market Street, Mumbai, India</li>
-              <li><i className="fas fa-phone-alt"></i> +91 98765 43210</li>
-              <li><i className="fas fa-envelope"></i> support@zivdah.com</li>
+              <li><i className="fas fa-map-marker-alt"></i> Unit 305, Kuber Complex, New Link Road, Opp to Laxmi Industrial Estate, Andheri West, Mumbai-400053</li>
+              <li><i className="fas fa-phone-alt"></i> (022) 44830442</li>
+              <li><i className="fas fa-envelope"></i> contact@zivdahonlinegrocery.com</li>
               <li><i className="fas fa-clock"></i> Mon–Sat: 8AM – 9PM</li>
             </ul>
             <div className="app-badges">
@@ -71,6 +71,16 @@ export default function Footer() {
             <i className="fab fa-cc-paypal"></i>
             <i className="fab fa-google-pay"></i>
           </div>
+        </div>
+        <div className="container footer-policy-links">
+          <Link to="/privacy-policy">Privacy Policy</Link>
+          <Link to="/refund-policy">Refund &amp; Returns Policy</Link>
+          <Link to="/cancellation-policy">Cancellation Policy</Link>
+        </div>
+        <div className="container footer-legal">
+          <span>CIN: U47912MH2025PTC437794</span>
+          <span>GSTIN: 27AACCZ5397C1Z1</span>
+          <span>FSSAI License Number: 11525997000838</span>
         </div>
       </div>
     </footer>

@@ -4,6 +4,7 @@ import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
 import { categoryApi } from '../api/productApi'
 import './Header.css'
+import logo from '../assets/logo.svg'
 
 const navLinks = [
   { label: 'Home', path: '/' },
@@ -46,8 +47,8 @@ export default function Header() {
     <header className="header">
       <div className="header-top">
         <div className="container header-top-inner">
-          <span><i className="fas fa-phone-alt"></i> +91 98765 43210</span>
-          <span><i className="fas fa-envelope"></i> support@zivdah.com</span>
+          <span><i className="fas fa-phone-alt"></i> (022) 44830442</span>
+          <span><i className="fas fa-envelope"></i> contact@zivdahonlinegrocery.com</span>
           <span><i className="fas fa-truck"></i> Free delivery on orders over ₹500</span>
         </div>
       </div>
@@ -55,7 +56,10 @@ export default function Header() {
       <div className="header-main">
         <div className="container header-main-inner">
           <Link to="/" className="logo">
-            <span className="logo-icon">🛒</span>
+            <span className="logo-icon">
+              <img src={logo} alt="Zivdah logo"/>
+            </span>
+            {/* <span className="logo-icon">🛒</span> */}
             <div>
               <div className="logo-name">Zivdah</div>
               <div className="logo-tagline">Online Grocery</div>

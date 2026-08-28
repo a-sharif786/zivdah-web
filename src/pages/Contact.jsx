@@ -3,9 +3,9 @@ import { Link } from 'react-router-dom'
 import './Contact.css'
 
 const info = [
-  { icon: 'fas fa-map-marker-alt', title: 'Our Address', lines: ['123 Market Street,', 'Mumbai, Maharashtra 400001', 'India'] },
-  { icon: 'fas fa-phone-alt', title: 'Phone Numbers', lines: ['+91 98765 43210', '+91 98765 43211'] },
-  { icon: 'fas fa-envelope', title: 'Email Us', lines: ['support@zivdah.com', 'orders@zivdah.com'] },
+  { icon: 'fas fa-map-marker-alt', title: 'Our Address', lines: ['Unit 305, Kuber Complex,','New Link Road, Opp to Laxmi Industrial Estate', ' Andheri West, Mumbai-400053', 'India'] },
+  { icon: 'fas fa-phone-alt', title: 'Phone Numbers', lines: ['(022) 44830442'] },
+  { icon: 'fas fa-envelope', title: 'Email Us', lines: ['contact@zivdahonlinegrocery.com'] },
   { icon: 'fas fa-clock', title: 'Working Hours', lines: ['Mon – Sat: 8:00 AM – 9:00 PM', 'Sunday: 9:00 AM – 6:00 PM'] },
 ]
 
@@ -95,13 +95,14 @@ export default function Contact() {
           </div>
 
           <div className="map-wrap">
-            <div className="map-placeholder">
-              <i className="fas fa-map-marker-alt"></i>
-              <h4>Find Us on the Map</h4>
-              <p>123 Market Street, Mumbai</p>
-              <p style={{ fontSize: 13, color: 'var(--gray)', marginTop: 8 }}>
-                Map integration will be added with Google Maps API
-              </p>
+            <div className="map-embed">
+              <iframe
+                title="Zivdah Office Location"
+                src="https://maps.google.com/maps?q=Unit%20305%2C%20Kuber%20Complex%2C%20New%20Link%20Road%2C%20Opp%20to%20Laxmi%20Industrial%20Estate%2C%20Andheri%20West%2C%20Mumbai-400053&output=embed"
+                allowFullScreen=""
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              ></iframe>
             </div>
 
             <div className="social-contact">

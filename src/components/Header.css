@@ -44,8 +44,10 @@
   flex-shrink: 0;
 }
 
-.logo-icon {
-  font-size: 36px;
+.logo-icon img{
+  width: 50px;
+  height: 40px;
+  display: block;
 }
 
 .logo-name {

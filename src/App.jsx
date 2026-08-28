@@ -16,6 +16,9 @@ import Account from './pages/Account'
 import Orders from './pages/Orders'
 import OrderDetail from './pages/OrderDetail'
 import Wishlist from './pages/Wishlist'
+import PrivacyPolicy from './pages/PrivacyPolicy'
+import RefundPolicy from './pages/RefundPolicy'
+import CancellationPolicy from './pages/CancellationPolicy'
 import NotFound from './pages/NotFound'
 
 function App() {
@@ -34,6 +37,9 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/refund-policy" element={<RefundPolicy />} />
+          <Route path="/cancellation-policy" element={<CancellationPolicy />} />
 
           <Route element={<ProtectedRoute />}>
             <Route path="/checkout" element={<Checkout />} />
