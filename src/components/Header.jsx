@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
+import { useTheme } from '../context/ThemeContext'
 import { categoryApi } from '../api/productApi'
 import './Header.css'
 import logo from '../assets/logo.svg'
@@ -16,6 +17,7 @@ const navLinks = [
 export default function Header() {
   const { count } = useCart()
   const { user, isAuthenticated, logout } = useAuth()
+  const { theme, toggleTheme } = useTheme()
   const [query, setQuery] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
   const [accountOpen, setAccountOpen] = useState(false)
@@ -77,6 +79,13 @@ export default function Header() {
           </form>
 
           <div className="header-actions">
+            <button
+              className="action-btn"
+              title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+              onClick={toggleTheme}
+            >
+              <i className={`fas fa-${theme === 'dark' ? 'sun' : 'moon'}`}></i>
+            </button>
             <Link to="/shop" className="action-btn" title="Shop">
               <i className="fas fa-store"></i>
             </Link>

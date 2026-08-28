@@ -1,5 +1,5 @@
 .product-card {
-  background: white;
+  background: var(--white);
   border-radius: var(--radius);
   overflow: hidden;
   box-shadow: var(--shadow);
@@ -106,7 +106,7 @@
 .product-name {
   font-size: 14px;
   font-weight: 600;
-  color: var(--dark);
+  color: var(--text);
   line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 2;

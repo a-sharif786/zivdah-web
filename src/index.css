@@ -11,6 +11,7 @@
   --secondary: #e74c3c;
   --accent: #f39c12;
   --dark: #2c3e50;
+  --text: #2c3e50;
   --gray: #7f8c8d;
   --light-gray: #ecf0f1;
   --bg: #f8f9fa;
@@ -22,11 +23,33 @@
   --transition: all 0.3s ease;
 }
 
+/* Dark theme overrides. `--dark` itself is left untouched — it's used as a fixed
+   navy fill for decorative sections (footer nav bar, CTA banners) that already
+   pair it with white text and should look the same in both themes. Everything
+   that needs to flip (page/card surfaces, borders, body text) lives in its own
+   variable below. */
+[data-theme='dark'] {
+  --primary-light: rgba(46, 204, 113, 0.16);
+  --text: #ecf0f1;
+  --gray: #93a1a5;
+  --light-gray: #232b30;
+  --bg: #14181b;
+  --white: #1e2528;
+  --border: #333e44;
+  --shadow: 0 2px 15px rgba(0,0,0,0.45);
+  --shadow-hover: 0 8px 30px rgba(0,0,0,0.6);
+}
+
+html {
+  background: var(--bg);
+}
+
 body {
   font-family: 'Poppins', sans-serif;
   background: var(--bg);
-  color: var(--dark);
+  color: var(--text);
   line-height: 1.6;
+  transition: background 0.25s ease, color 0.25s ease;
 }
 
 #root {
@@ -58,6 +81,8 @@ button {
 input, select, textarea {
   font-family: 'Poppins', sans-serif;
   outline: none;
+  background: var(--white);
+  color: var(--text);
 }
 
 .container {
@@ -73,7 +98,7 @@ input, select, textarea {
 .section-title {
   font-size: 28px;
   font-weight: 700;
-  color: var(--dark);
+  color: var(--text);
   margin-bottom: 8px;
 }
 
@@ -200,7 +225,7 @@ input, select, textarea {
 .empty-state h3 {
   font-size: 22px;
   margin-bottom: 10px;
-  color: var(--dark);
+  color: var(--text);
 }
 
 @media (max-width: 1024px) {

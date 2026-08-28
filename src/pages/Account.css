@@ -10,7 +10,7 @@
 }
 
 .account-card {
-  background: white;
+  background: var(--white);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   padding: 24px;
@@ -32,7 +32,7 @@
 
 .address-item {
   font-size: 13px;
-  color: var(--dark);
+  color: var(--text);
   background: var(--light-gray);
   padding: 10px 14px;
   border-radius: 8px;

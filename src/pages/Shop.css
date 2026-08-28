@@ -1,7 +1,7 @@
 .shop-page { padding-bottom: 60px; }
 
 .shop-breadcrumb {
-  background: white;
+  background: var(--white);
   border-bottom: 1px solid var(--border);
   padding: 14px 0;
   font-size: 14px;
@@ -32,7 +32,7 @@
 }
 
 .sidebar-block {
-  background: white;
+  background: var(--white);
   border-radius: var(--radius);
   padding: 20px;
   box-shadow: var(--shadow);
@@ -41,7 +41,7 @@
 .sidebar-block h4 {
   font-size: 15px;
   font-weight: 700;
-  color: var(--dark);
+  color: var(--text);
   margin-bottom: 16px;
   padding-bottom: 10px;
   border-bottom: 1px solid var(--border);
@@ -61,7 +61,7 @@
   padding: 8px 12px;
   border-radius: 8px;
   font-size: 14px;
-  color: var(--dark);
+  color: var(--text);
   background: none;
   border: none;
   cursor: pointer;
@@ -84,6 +84,10 @@
   border-radius: 10px;
   padding: 1px 8px;
   font-size: 12px;
+}
+
+[data-theme='dark'] .cat-filter-list button:not(.active) span {
+  background: rgba(255,255,255,0.12);
 }
 
 .cat-filter-list button.active span {
@@ -130,7 +134,7 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
-  background: white;
+  background: var(--white);
   padding: 12px 16px;
   border-radius: var(--radius);
   box-shadow: var(--shadow);
@@ -146,7 +150,7 @@
   border: 1px solid var(--border);
   border-radius: 8px;
   font-size: 14px;
-  color: var(--dark);
+  color: var(--text);
   cursor: pointer;
 }
 

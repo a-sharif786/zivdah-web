@@ -124,7 +124,7 @@ export default function Home() {
       </section>
 
       {/* FEATURED PRODUCTS */}
-      <section className="section" style={{ background: 'white' }}>
+      <section className="section" style={{ background: 'var(--white)' }}>
         <div className="container">
           <div className="section-header">
             <div>
@@ -185,7 +185,7 @@ export default function Home() {
       )}
 
       {/* TESTIMONIALS */}
-      <section className="section testimonials" style={{ background: 'white' }}>
+      <section className="section testimonials" style={{ background: 'var(--white)' }}>
         <div className="container">
           <h2 className="section-title" style={{ textAlign: 'center' }}>What Our Customers Say</h2>
           <p className="section-subtitle" style={{ textAlign: 'center', marginBottom: 40 }}>Real reviews from happy customers</p>

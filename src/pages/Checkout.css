@@ -1,7 +1,7 @@
 .checkout-page { padding-bottom: 60px; }
 
 .shop-breadcrumb {
-  background: white;
+  background: var(--white);
   border-bottom: 1px solid var(--border);
   padding: 14px 0;
   font-size: 14px;
@@ -60,7 +60,7 @@
 }
 
 .checkout-form {
-  background: white;
+  background: var(--white);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   padding: 28px;
@@ -83,7 +83,7 @@
 .form-group label {
   font-size: 13px;
   font-weight: 600;
-  color: var(--dark);
+  color: var(--text);
 }
 
 .form-group input,
@@ -171,7 +171,7 @@
 
 .address-option div { display: flex; flex-direction: column; gap: 4px; }
 
-.address-option strong { font-size: 14px; font-weight: 600; color: var(--dark); display: flex; align-items: center; gap: 8px; }
+.address-option strong { font-size: 14px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 8px; }
 
 .address-option.selected {
   border-color: var(--primary);
@@ -203,7 +203,7 @@
 }
 
 .checkout-summary {
-  background: white;
+  background: var(--white);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   padding: 24px;
@@ -245,7 +245,7 @@
 .summary-rows { display: flex; flex-direction: column; gap: 10px; }
 .summary-row { display: flex; justify-content: space-between; font-size: 14px; color: var(--gray); }
 .summary-row .free { color: var(--primary); font-weight: 700; }
-.total-row { border-top: 2px solid var(--border); padding-top: 10px; font-size: 16px; font-weight: 700; color: var(--dark); }
+.total-row { border-top: 2px solid var(--border); padding-top: 10px; font-size: 16px; font-weight: 700; color: var(--text); }
 
 @media (max-width: 900px) {
   .checkout-layout { grid-template-columns: 1fr; }
