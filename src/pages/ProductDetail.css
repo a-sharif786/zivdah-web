@@ -122,7 +122,18 @@
 
 .pd-stock i.fa-check-circle { color: var(--primary); }
 .pd-stock i.fa-times-circle { color: var(--secondary); }
-.pd-stock { font-weight: 600; color: var(--primary); margin-bottom: 24px; }
+.pd-stock { font-weight: 600; color: var(--primary); margin-bottom: 8px; }
+
+.pd-vendor {
+  font-size: 13px;
+  color: var(--gray);
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pd-vendor i { color: var(--primary); }
 
 .pd-qty-row {
   display: flex;

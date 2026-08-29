@@ -5,6 +5,7 @@ import { reviewApi } from '../api/reviewApi'
 import { useCart } from '../context/CartContext'
 import { useWishlist } from '../context/WishlistContext'
 import { useAuth } from '../context/AuthContext'
+import { useVendorName } from '../hooks/useVendorName'
 import ProductCard from '../components/ProductCard'
 import { categoryLabel } from '../utils/categoryMeta'
 import { formatCurrency, formatDate } from '../utils/format'
@@ -47,6 +48,8 @@ export default function ProductDetail() {
       .catch(() => setNotFound(true))
     loadReviews()
   }, [productId, loadReviews])
+
+  const vendorName = useVendorName(product?.vendorId)
 
   const handleSubmitReview = async (e) => {
     e.preventDefault()
@@ -144,6 +147,11 @@ export default function ProductDetail() {
             <i className={`fas fa-${product.inStock ? 'check-circle' : 'times-circle'}`}></i>
             {product.inStock ? 'In Stock' : 'Out of Stock'}
           </p>
+          {vendorName && (
+            <p className="pd-vendor">
+              <i className="fas fa-store"></i> Sold by {vendorName}
+            </p>
+          )}
 
           <div className="pd-qty-row">
             <div className="qty-control">

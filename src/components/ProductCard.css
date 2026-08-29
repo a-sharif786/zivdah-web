@@ -124,6 +124,16 @@
   color: var(--gray);
 }
 
+.product-vendor {
+  font-size: 11px;
+  color: var(--gray);
+}
+
+.product-vendor i {
+  margin-right: 4px;
+  color: var(--primary);
+}
+
 .product-footer {
   display: flex;
   align-items: center;

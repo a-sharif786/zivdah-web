@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
 import { useWishlist } from '../context/WishlistContext'
 import { useAuth } from '../context/AuthContext'
+import { useVendorName } from '../hooks/useVendorName'
 import { categoryLabel } from '../utils/categoryMeta'
 import { formatCurrency } from '../utils/format'
 import './ProductCard.css'
@@ -13,6 +14,7 @@ export default function ProductCard({ product }) {
   const { isWishlisted, toggle } = useWishlist()
   const { isAuthenticated } = useAuth()
   const navigate = useNavigate()
+  const vendorName = useVendorName(product.vendorId)
 
   const inCart = items.some(i => i.productId === product.id)
   const wishlisted = isAuthenticated && isWishlisted(product.id)
@@ -58,6 +60,7 @@ export default function ProductCard({ product }) {
         <span className="product-category">{categoryLabel(product.category)}</span>
         <Link to={`/product/${product.id}`} className="product-name">{product.name}</Link>
         <div className="product-unit">{product.unit}</div>
+        {vendorName && <div className="product-vendor"><i className="fas fa-store"></i> Sold by {vendorName}</div>}
 
         <div className="product-footer">
           <div className="product-price">
