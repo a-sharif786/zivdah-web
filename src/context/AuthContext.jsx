@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { authApi } from '../api/authApi';
 import { AUTH_STORAGE_KEY } from '../api/client';
+import { getFcmToken } from '../firebase';
 
 const AuthContext = createContext();
 
@@ -52,9 +53,12 @@ export function AuthProvider({ children }) {
   }, []);
 
   const logout = useCallback(() => {
-    authApi.logout().catch(() => {
-      // best-effort — clear the local session regardless of whether the server call succeeds
-    });
+    // Only deactivates this browser's push registration — other signed-in devices/browsers
+    // stay registered. Resolves from Firebase's local cache, so this doesn't re-prompt for
+    // permission; best-effort either way — clear the local session regardless of outcome.
+    getFcmToken()
+      .then((token) => authApi.logout(token ?? undefined))
+      .catch(() => {});
     localStorage.removeItem(AUTH_STORAGE_KEY);
     setAuth(null);
   }, []);

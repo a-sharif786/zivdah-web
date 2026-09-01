@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
+import { useNotifications } from '../context/NotificationContext'
 import { useTheme } from '../context/ThemeContext'
 import { categoryApi } from '../api/productApi'
 import './Header.css'
@@ -17,6 +18,7 @@ const navLinks = [
 export default function Header() {
   const { count } = useCart()
   const { user, isAuthenticated, logout } = useAuth()
+  const { unreadCount } = useNotifications()
   const { theme, toggleTheme } = useTheme()
   const [query, setQuery] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
@@ -94,6 +96,12 @@ export default function Header() {
                 <i className="fas fa-heart"></i>
               </Link>
             )}
+            {isAuthenticated && (
+              <Link to="/notifications" className="action-btn" title="Notifications">
+                <i className="fas fa-bell"></i>
+                {unreadCount > 0 && <span className="cart-badge">{unreadCount}</span>}
+              </Link>
+            )}
             <Link to="/cart" className="action-btn cart-btn" title="Cart">
               <i className="fas fa-shopping-cart"></i>
               {count > 0 && <span className="cart-badge">{count}</span>}
@@ -112,6 +120,7 @@ export default function Header() {
                         <div className="account-dropdown-greeting">Hi, {user.name?.split(' ')[0]}</div>
                         <Link to="/account" onClick={() => setAccountOpen(false)}>My Account</Link>
                         <Link to="/orders" onClick={() => setAccountOpen(false)}>My Orders</Link>
+                        <Link to="/notifications" onClick={() => setAccountOpen(false)}>Notifications</Link>
                         <Link to="/wishlist" onClick={() => setAccountOpen(false)}>Wishlist</Link>
                         <button onClick={handleLogout}>Log Out</button>
                       </>

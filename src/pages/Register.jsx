@@ -42,7 +42,7 @@ export default function Register() {
         email: form.email,
         mobileOtp: otp.mobileOtp,
         emailOtp: otp.emailOtp,
-        deviceToken: getDeviceToken(),
+        deviceToken: await getDeviceToken(),
       });
       login(response);
       navigate('/', { replace: true });

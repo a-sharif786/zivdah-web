@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { CartProvider } from './context/CartContext'
 import { WishlistProvider } from './context/WishlistContext'
+import { NotificationProvider } from './context/NotificationContext'
 import { ThemeProvider } from './context/ThemeContext'
 import './index.css'
 import App from './App.jsx'
@@ -15,7 +16,9 @@ createRoot(document.getElementById('root')).render(
         <AuthProvider>
           <CartProvider>
             <WishlistProvider>
-              <App />
+              <NotificationProvider>
+                <App />
+              </NotificationProvider>
             </WishlistProvider>
           </CartProvider>
         </AuthProvider>

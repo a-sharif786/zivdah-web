@@ -1,0 +1,53 @@
+.notifications-page {
+  padding: 40px 20px 60px;
+}
+
+.notifications-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.notification-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px 20px;
+}
+
+.notification-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--light-gray);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 16px;
+}
+
+.notification-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.notification-body strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.notification-body p {
+  font-size: 14px;
+  color: var(--text);
+  margin: 0 0 6px;
+}
+
+.notification-date {
+  font-size: 12px;
+  color: var(--gray);
+}

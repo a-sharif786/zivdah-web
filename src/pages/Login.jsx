@@ -62,7 +62,7 @@ export default function Login() {
       const response = await authApi.verifyOtp({
         mobile: otpMobile,
         otp,
-        deviceToken: getDeviceToken(),
+        deviceToken: await getDeviceToken(),
       });
       login(response);
       navigate(redirectTo, { replace: true });

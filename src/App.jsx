@@ -16,6 +16,7 @@ import Account from './pages/Account'
 import Orders from './pages/Orders'
 import OrderDetail from './pages/OrderDetail'
 import Wishlist from './pages/Wishlist'
+import Notifications from './pages/Notifications'
 import PrivacyPolicy from './pages/PrivacyPolicy'
 import RefundPolicy from './pages/RefundPolicy'
 import CancellationPolicy from './pages/CancellationPolicy'
@@ -47,6 +48,7 @@ function App() {
             <Route path="/orders" element={<Orders />} />
             <Route path="/orders/:orderId" element={<OrderDetail />} />
             <Route path="/wishlist" element={<Wishlist />} />
+            <Route path="/notifications" element={<Notifications />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />
