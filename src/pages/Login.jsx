@@ -7,7 +7,6 @@ import './Auth.css';
 
 export default function Login() {
   const [mode, setMode] = useState('password'); // 'password' | 'otp'
-  const [identifierType, setIdentifierType] = useState('mobile'); // 'mobile' | 'email'
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [otpMobile, setOtpMobile] = useState('');
@@ -27,8 +26,7 @@ export default function Login() {
     setLoading(true);
     try {
       const response = await authApi.login({
-        mobile: identifierType === 'mobile' ? identifier : undefined,
-        email: identifierType === 'email' ? identifier : undefined,
+        email: identifier,
         password,
       });
       login(response);
@@ -88,7 +86,7 @@ export default function Login() {
               setError(null);
             }}
           >
-            Password
+           Log in with Password
           </button>
           <button
             type="button"
@@ -107,16 +105,9 @@ export default function Login() {
         {mode === 'password' ? (
           <form onSubmit={handlePasswordLogin}>
             <div className="auth-field">
-              <label>Login with</label>
-              <select value={identifierType} onChange={(e) => setIdentifierType(e.target.value)}>
-                <option value="mobile">Mobile Number</option>
-                <option value="email">Email</option>
-              </select>
-            </div>
-            <div className="auth-field">
-              <label>{identifierType === 'mobile' ? 'Mobile Number' : 'Email'}</label>
+              <label>Email</label>
               <input
-                type={identifierType === 'email' ? 'email' : 'tel'}
+                type="email"
                 required
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
