@@ -27,6 +27,11 @@ export const authApi = {
   updateProfile: (userId, payload) =>
     apiClient.put(`${BASE}/update-profile/${userId}`, payload).then((r) => r.data),
 
+  // Soft-deletes the account (sets active=false, clears the server-side session).
+  // Backend requires the caller to be the account owner or an ADMIN — an admin is the
+  // only one who can reverse it via activate/{userId}, there's no user-facing undo.
+  deactivateAccount: (userId) => apiClient.put(`${BASE}/deactivate/${userId}`).then((r) => r.data),
+
   // Registers/refreshes one device's FCM token — a user may be signed in on several
   // devices/browsers at once, each becomes its own row server-side (see device_tokens).
   registerDeviceToken: (fcmToken, deviceType = 'WEB') =>

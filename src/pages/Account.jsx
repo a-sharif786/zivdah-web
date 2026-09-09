@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { authApi } from '../api/authApi'
 import { userApi } from '../api/userApi'
@@ -148,6 +149,16 @@ export default function Account() {
               {addingAddress ? 'Adding...' : 'Add Address'}
             </button>
           </form>
+        </div>
+
+        <div className="account-card account-danger-zone">
+          <h3>Danger Zone</h3>
+          <p className="auth-hint" style={{ marginTop: 0 }}>
+            Deactivate your account. You'll be signed out and won't be able to log back in.
+          </p>
+          <Link to="/account/delete" className="btn-danger">
+            Delete My Account
+          </Link>
         </div>
       </div>
     </div>

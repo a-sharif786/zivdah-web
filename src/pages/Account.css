@@ -54,6 +54,10 @@
   gap: 16px;
 }
 
+.account-danger-zone {
+  grid-column: 1 / -1;
+}
+
 @media (max-width: 800px) {
   .account-grid { grid-template-columns: 1fr; }
 }
