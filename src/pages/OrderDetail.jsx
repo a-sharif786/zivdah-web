@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, useLocation, Link } from 'react-router-dom'
 import { orderApi } from '../api/orderApi'
+import { invoiceApi, openInvoiceBlob } from '../api/invoiceApi'
 import { formatCurrency, formatDateTime } from '../utils/format'
 import './Orders.css'
 
@@ -12,12 +13,34 @@ export default function OrderDetail() {
   const [order, setOrder] = useState(null)
   const [error, setError] = useState(null)
   const [cancelling, setCancelling] = useState(false)
+  // undefined = still checking, null = confirmed none generated yet (e.g. payment not
+  // completed, or generation is still in flight) — either way the section just stays hidden.
+  const [invoice, setInvoice] = useState(undefined)
+  const [invoiceBusy, setInvoiceBusy] = useState(null)
 
   const load = useCallback(() => {
     orderApi.getById(orderId).then(setOrder).catch((err) => setError(err.message))
   }, [orderId])
 
   useEffect(() => { load() }, [load])
+
+  useEffect(() => {
+    if (!order) return
+    invoiceApi.getByOrderId(order.orderId).then(setInvoice).catch(() => setInvoice(null))
+  }, [order])
+
+  const handleInvoice = async (mode) => {
+    if (!invoice) return
+    setInvoiceBusy(mode === 'inline' ? 'view' : 'download')
+    try {
+      const blob = await invoiceApi.downloadBlob(invoice.id, mode)
+      openInvoiceBlob(blob, `${invoice.invoiceNumber}.pdf`, mode)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setInvoiceBusy(null)
+    }
+  }
 
   const handleCancel = async () => {
     setCancelling(true)
@@ -106,6 +129,29 @@ export default function OrderDetail() {
               .filter(Boolean).join(', ')}
           </p>
           <p className="order-date">Placed on {formatDateTime(order.createdAt)}</p>
+
+          {invoice && (
+            <>
+              <h3 style={{ marginTop: 20 }}>Invoice</h3>
+              <p className="order-date">{invoice.invoiceNumber} · {formatDateTime(invoice.invoiceDate)}</p>
+              <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                <button
+                  className="btn-secondary"
+                  onClick={() => handleInvoice('inline')}
+                  disabled={invoiceBusy === 'view'}
+                >
+                  {invoiceBusy === 'view' ? 'Opening...' : 'View Invoice'}
+                </button>
+                <button
+                  className="btn-primary"
+                  onClick={() => handleInvoice('attachment')}
+                  disabled={invoiceBusy === 'download'}
+                >
+                  {invoiceBusy === 'download' ? 'Downloading...' : 'Download Invoice'}
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
