@@ -33,7 +33,7 @@
 }
 
 .info-card h4 { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
-.info-card p { font-size: 13px; color: var(--gray); line-height: 1.6; }
+.info-card p { font-size: 13px; color: var(--gray); line-height: 1.6; overflow-wrap: break-word; }
 
 .contact-layout {
   display: grid;
@@ -193,11 +193,14 @@
   border-top: 1px solid var(--border);
 }
 
-@media (max-width: 900px) {
+@media (max-width: 768px) {
   .contact-layout { grid-template-columns: 1fr; }
   .contact-hero h1 { font-size: 32px; }
 }
 
 @media (max-width: 480px) {
   .form-row-2 { grid-template-columns: 1fr; }
+  /* The shared .grid-4 (index.css) only goes to 2 columns at this width — fine for
+     product cards, but too cramped for these info cards' longer address/email text. */
+  .contact-page .grid-4 { grid-template-columns: 1fr; }
 }

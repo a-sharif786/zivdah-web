@@ -21,6 +21,7 @@ export default function Shop() {
   const [selectedCategory, setSelectedCategory] = useState(categoryParam || 'All')
   const [sort, setSort] = useState('default')
   const [priceMax, setPriceMax] = useState(500)
+  const [filtersOpen, setFiltersOpen] = useState(false)
 
   // Re-sync when navigating between /shop/:category links (route param changes)
   // rather than only reading it once at mount.
@@ -66,12 +67,23 @@ export default function Shop() {
 
       <div className="container shop-layout">
         {/* SIDEBAR */}
-        <aside className="shop-sidebar">
+        {filtersOpen && <div className="shop-sidebar-backdrop" onClick={() => setFiltersOpen(false)} />}
+        <aside className={`shop-sidebar ${filtersOpen ? 'open' : ''}`}>
+          <div className="shop-sidebar-header">
+            <h3>Filters</h3>
+            <button className="shop-sidebar-close" onClick={() => setFiltersOpen(false)}>
+              <i className="fas fa-times"></i>
+            </button>
+          </div>
+
           <div className="sidebar-block">
             <h4>Categories</h4>
             <ul className="cat-filter-list">
               <li>
-                <button className={selectedCategory === 'All' ? 'active' : ''} onClick={() => setSelectedCategory('All')}>
+                <button
+                  className={selectedCategory === 'All' ? 'active' : ''}
+                  onClick={() => { setSelectedCategory('All'); setFiltersOpen(false) }}
+                >
                   All
                 </button>
               </li>
@@ -79,7 +91,7 @@ export default function Shop() {
                 <li key={cat}>
                   <button
                     className={selectedCategory === cat ? 'active' : ''}
-                    onClick={() => setSelectedCategory(cat)}
+                    onClick={() => { setSelectedCategory(cat); setFiltersOpen(false) }}
                   >
                     <span>
                       <img
@@ -115,6 +127,9 @@ export default function Shop() {
         {/* MAIN */}
         <div className="shop-main">
           <div className="shop-toolbar">
+            <button className="filter-toggle-btn" onClick={() => setFiltersOpen(true)}>
+              <i className="fas fa-sliders-h"></i> Filters
+            </button>
             <p>{visible.length} products {searchQuery && `for "${searchQuery}"`}</p>
             <select value={sort} onChange={e => setSort(e.target.value)} className="sort-select">
               {sortOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}

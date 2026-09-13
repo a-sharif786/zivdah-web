@@ -88,7 +88,10 @@ export default function Header() {
             >
               <i className={`fas fa-${theme === 'dark' ? 'sun' : 'moon'}`}></i>
             </button>
-            <Link to="/shop" className="action-btn" title="Shop">
+            {/* Hidden on mobile (see Header.css ≤768px block) — redundant there with the
+                "Shop" link already in the hamburger nav below, and dropping it is one of
+                the things that makes the header row actually fit on a phone. */}
+            <Link to="/shop" className="action-btn action-btn-quicklink" title="Shop">
               <i className="fas fa-store"></i>
             </Link>
             {isAuthenticated && (

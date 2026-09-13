@@ -72,6 +72,7 @@ export default function Cart() {
                   <div>
                     <Link to={`/product/${item.productId}`} className="cart-product-name">{item.name}</Link>
                     <span className="cart-product-unit">{item.unit}</span>
+                    <span className="cart-price-mobile">{formatCurrency(item.price)} each</span>
                   </div>
                 </div>
                 <span className="cart-price">{formatCurrency(item.price)}</span>

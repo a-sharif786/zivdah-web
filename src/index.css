@@ -216,21 +216,25 @@ input, select, textarea {
   color: var(--accent);
 }
 
+/* minmax(0, 1fr) rather than a bare 1fr: a plain `1fr` track still won't shrink
+   below its content's min-content width (the grid equivalent of a flex item's
+   default min-width:auto), which was letting wide-content cards (e.g. Contact's
+   info cards) force these grids past the viewport instead of actually reflowing. */
 .grid-4 {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 24px;
 }
 
 .grid-3 {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 24px;
 }
 
 .grid-2 {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 24px;
 }
 
@@ -252,17 +256,25 @@ input, select, textarea {
   color: var(--text);
 }
 
+/* Standard responsive breakpoint scale for this app — every component's own
+   @media queries should pick one of these three cutoffs (desktop-first,
+   max-width) rather than a one-off value, so tablet/mobile behavior stays
+   consistent page to page:
+     1024px — tablet landscape / small laptop
+     768px  — tablet portrait (also where mobile nav/stacked layouts kick in)
+     480px  — phone */
+
 @media (max-width: 1024px) {
-  .grid-4 { grid-template-columns: repeat(3, 1fr); }
+  .grid-4 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 @media (max-width: 768px) {
-  .grid-4 { grid-template-columns: repeat(2, 1fr); gap: 16px; }
-  .grid-3 { grid-template-columns: repeat(2, 1fr); }
+  .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .section { padding: 40px 0; }
   .section-title { font-size: 22px; }
 }
 
 @media (max-width: 480px) {
-  .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-4, .grid-3, .grid-2 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
 }

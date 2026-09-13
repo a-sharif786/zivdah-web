@@ -28,7 +28,9 @@
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr)); /* minmax(0,1fr), not bare 1fr — see
+    index.css's .grid-4 comment for why: a plain 1fr track won't shrink below its
+    content's min-content width. */
   gap: 30px;
 }
 
@@ -181,7 +183,11 @@
 
 @media (max-width: 768px) {
   .about-hero h1 { font-size: 34px; }
-  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .story-layout { grid-template-columns: 1fr; }
   .about-cta h2 { font-size: 26px; }
+}
+
+@media (max-width: 480px) {
+  .stats-grid { grid-template-columns: 1fr; }
 }

@@ -364,6 +364,7 @@
 
 .newsletter-form input {
   flex: 1;
+  min-width: 0; /* see Header.css .search-bar for why this is needed on a flex:1 input */
   border: none;
   padding: 14px 20px;
   font-size: 14px;
@@ -381,7 +382,7 @@
 }
 
 @media (max-width: 1024px) {
-  .categories-grid { grid-template-columns: repeat(5, 1fr); }
+  .categories-grid { grid-template-columns: repeat(4, 1fr); }
 }
 
 @media (max-width: 768px) {

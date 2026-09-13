@@ -104,6 +104,11 @@
 
 .cart-product-unit { font-size: 12px; color: var(--gray); }
 
+/* Hidden on desktop, where the dedicated .cart-price column already shows this —
+   shown only at the mobile breakpoint below, where that column is hidden instead
+   (see the 768px block), so the per-unit price stays visible one way or the other. */
+.cart-price-mobile { display: none; font-size: 12px; color: var(--gray); margin-top: 2px; }
+
 .cart-price, .cart-total { font-size: 15px; font-weight: 600; color: var(--text); }
 .cart-total { color: var(--primary); }
 
@@ -198,6 +203,7 @@
 
 .coupon-row input {
   flex: 1;
+  min-width: 0; /* see Header.css .search-bar for why this is needed on a flex:1 input */
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 10px 14px;
@@ -221,9 +227,10 @@
   color: var(--gray);
 }
 
-@media (max-width: 900px) {
+@media (max-width: 768px) {
   .cart-layout { grid-template-columns: 1fr; }
   .cart-table-head { display: none; }
   .cart-row { grid-template-columns: 1fr auto; gap: 8px; }
   .cart-price { display: none; }
+  .cart-price-mobile { display: block; }
 }
