@@ -26,6 +26,11 @@ apiClient.interceptors.request.use((config) => {
     config.headers = config.headers ?? {};
     config.headers.Authorization = `Bearer ${token}`;
   }
+  // Let the browser set the multipart boundary itself for FormData bodies (needed for
+  // chat attachment uploads) — same fix already applied in zivdah-admin/src/api/client.ts.
+  if (config.data instanceof FormData && config.headers) {
+    delete config.headers['Content-Type'];
+  }
   return config;
 });
 

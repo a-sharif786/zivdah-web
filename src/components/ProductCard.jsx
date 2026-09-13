@@ -9,7 +9,7 @@ import './ProductCard.css'
 
 const NEW_WITHIN_DAYS = 7
 
-export default function ProductCard({ product }) {
+export default function ProductCard({ product, compact = false }) {
   const { addItem, items } = useCart()
   const { isWishlisted, toggle } = useWishlist()
   const { isAuthenticated } = useAuth()
@@ -40,7 +40,7 @@ export default function ProductCard({ product }) {
   }
 
   return (
-    <div className="product-card">
+    <div className={`product-card ${compact ? 'product-card-compact' : ''}`}>
       <Link to={`/product/${product.id}`} className="product-img-wrap">
         <img src={product.imageUrl} alt={product.name} loading="lazy" />
         {hasDiscount && <span className="product-badge badge-sale">-{discountPercent}%</span>}
@@ -75,6 +75,12 @@ export default function ProductCard({ product }) {
             <i className={`fas fa-${inCart ? 'check' : 'shopping-cart'}`}></i>
           </button>
         </div>
+
+        {compact && (
+          <Link to={`/product/${product.id}`} className="btn-secondary product-view-btn">
+            View Product
+          </Link>
+        )}
       </div>
     </div>
   )

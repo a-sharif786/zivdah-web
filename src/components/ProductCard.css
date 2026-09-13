@@ -187,3 +187,23 @@
   cursor: not-allowed;
   transform: none;
 }
+
+/* Compact variant (opt-in via the `compact` prop) — used for the chat widget's
+   horizontally-scrollable product strip; adds an explicit "View Product" link
+   alongside the existing image/Add-to-Cart, without altering the default card. */
+.product-card-compact {
+  width: 150px;
+  flex-shrink: 0;
+}
+
+.product-card-compact .product-info {
+  padding: 10px;
+}
+
+.product-view-btn {
+  width: 100%;
+  justify-content: center;
+  padding: 6px 10px;
+  font-size: 12px;
+  margin-top: 4px;
+}
