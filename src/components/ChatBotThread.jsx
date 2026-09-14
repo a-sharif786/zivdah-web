@@ -11,11 +11,24 @@ const AFFIRMATIVE_RE = /^(yes|yeah|yep|yup|sure|confirm(ed)?|ok(ay)?|do it|go ah
 const NEGATIVE_RE = /^(no|nah|nope|don'?t|do not|never ?mind|keep it|keep( the)? order|leave it)[.!]?$/i;
 
 export default function ChatBotThread() {
-  const { messages, sendBotMessage, requestHuman, confirmAction, sending, error } = useChat();
+  const {
+    mode,
+    messages,
+    sendBotMessage,
+    requestHuman,
+    confirmAction,
+    endBotChat,
+    startNewBotChat,
+    conversationId,
+    sending,
+    error,
+  } = useChat();
   const { isAuthenticated } = useAuth();
   const location = useLocation();
   const [text, setText] = useState('');
   const [showGuestPrompt, setShowGuestPrompt] = useState(false);
+  const [showEndConfirm, setShowEndConfirm] = useState(false);
+  const isEnded = mode === 'CLOSED';
   const endRef = useRef(null);
 
   useEffect(() => {
@@ -27,7 +40,7 @@ export default function ChatBotThread() {
   const handleSend = (e) => {
     e.preventDefault();
     const trimmed = text.trim();
-    if (!trimmed || sending) return;
+    if (!trimmed || sending || isEnded) return;
 
     // Typing "yes"/"no" instead of clicking the confirm buttons below used to just get sent as
     // a plain message, which the bot's intent classifier doesn't recognize (falls back to
@@ -58,6 +71,11 @@ export default function ChatBotThread() {
       return;
     }
     requestHuman();
+  };
+
+  const handleConfirmEnd = async () => {
+    await endBotChat();
+    setShowEndConfirm(false);
   };
 
   return (
@@ -142,7 +160,31 @@ export default function ChatBotThread() {
       {error && <div className="chat-error-banner">{error}</div>}
 
       <div className="chat-human-affordance">
-        {showGuestPrompt ? (
+        {isEnded ? (
+          <div className="chat-ended-banner">
+            <span><i className="fas fa-check-circle"></i> This chat has ended.</span>
+            <button type="button" className="btn-primary chat-ended-restart-btn" onClick={startNewBotChat}>
+              Start New Chat
+            </button>
+          </div>
+        ) : showEndConfirm ? (
+          <div className="chat-end-confirm">
+            <span>End this chat with the assistant?</span>
+            <div className="chat-end-confirm-actions">
+              <button
+                type="button"
+                className="btn-secondary"
+                disabled={sending}
+                onClick={() => setShowEndConfirm(false)}
+              >
+                Cancel
+              </button>
+              <button type="button" className="btn-primary" disabled={sending} onClick={handleConfirmEnd}>
+                End Chat
+              </button>
+            </div>
+          </div>
+        ) : showGuestPrompt ? (
           <div className="chat-guest-prompt">
             <span>Please log in to talk to a human agent.</span>
             <div className="chat-guest-prompt-actions">
@@ -151,23 +193,38 @@ export default function ChatBotThread() {
             </div>
           </div>
         ) : (
-          <button type="button" className="chat-talk-human-btn" onClick={handleTalkToHuman}>
-            <i className="fas fa-user"></i> Talk to Human Support
-          </button>
+          <div className="chat-bot-affordance-row">
+            <button type="button" className="chat-talk-human-btn" onClick={handleTalkToHuman}>
+              <i className="fas fa-user"></i> Talk to Human Support
+            </button>
+            {conversationId != null && (
+              <button
+                type="button"
+                className="chat-end-chat-btn"
+                onClick={() => setShowEndConfirm(true)}
+                title="End Chat"
+                aria-label="End chat"
+              >
+                <i className="fas fa-power-off"></i>
+              </button>
+            )}
+          </div>
         )}
       </div>
 
-      <form className="chat-composer" onSubmit={handleSend}>
-        <input
-          type="text"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="Type a message..."
-        />
-        <button type="submit" disabled={!text.trim() || sending} aria-label="Send">
-          <i className="fas fa-paper-plane"></i>
-        </button>
-      </form>
+      {!isEnded && (
+        <form className="chat-composer" onSubmit={handleSend}>
+          <input
+            type="text"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Type a message..."
+          />
+          <button type="submit" disabled={!text.trim() || sending} aria-label="Send">
+            <i className="fas fa-paper-plane"></i>
+          </button>
+        </form>
+      )}
     </div>
   );
 }

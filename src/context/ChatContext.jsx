@@ -559,6 +559,50 @@ export function ChatProvider({ children }) {
     resetToChoiceBot();
   }, [resetToChoiceBot]);
 
+  // Customer-initiated end of the current Assistant (BOT) conversation — distinct from
+  // closeAndRate above, which only ever fires from the RATING screen an agent-closed HUMAN
+  // conversation lands on. Stays on the BOT screen (mode flips to 'CLOSED', same value the
+  // WS-lifecycle effect already treats as "no socket needed" for HUMAN mode, so no extra
+  // branching there) so ChatBotThread can keep the transcript visible with an ended banner —
+  // history isn't cleared here; startNewBotChat below is what actually resets it.
+  const endBotChat = useCallback(async () => {
+    if (conversationId == null) return;
+    setSending(true);
+    setError(null);
+    try {
+      await chatApi.endConversation(conversationId);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `local-${crypto.randomUUID()}`,
+          senderType: 'SYSTEM',
+          messageType: 'SYSTEM',
+          message: 'You ended this chat.',
+          status: 'DELIVERED',
+          createdAt: new Date().toISOString(),
+        },
+      ]);
+      setMode('CLOSED');
+    } catch (err) {
+      setError(err.message || 'Could not end the chat. Please try again.');
+    } finally {
+      setSending(false);
+    }
+  }, [conversationId]);
+
+  // Lets the customer start a fresh Assistant conversation right after ending the last one —
+  // the ended conversation and its messages aren't touched server-side (still there, just
+  // CLOSED); this only resets local state so the next sendBotMessage starts a brand new one,
+  // exactly like the very first message of a session (conversationId == null).
+  const startNewBotChat = useCallback(() => {
+    setConversationId(null);
+    setMessages([]);
+    lastMessageIdRef.current = 0;
+    setError(null);
+    setMode('BOT');
+    setScreen('BOT');
+  }, []);
+
   const openChoice = useCallback(() => setScreen('CHOICE'), []);
   const openBotScreen = useCallback(() => setScreen('BOT'), []);
 
@@ -587,6 +631,8 @@ export function ChatProvider({ children }) {
     confirmAction,
     closeAndRate,
     dismissRating,
+    endBotChat,
+    startNewBotChat,
     reconnect,
     markAgentMessagesRead,
     openChoice,

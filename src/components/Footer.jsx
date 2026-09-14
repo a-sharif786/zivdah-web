@@ -55,8 +55,25 @@ export default function Footer() {
               <li><i className="fas fa-clock"></i> Mon–Sat: 8AM – 9PM</li>
             </ul>
             <div className="app-badges">
-              <div className="app-badge"><i className="fab fa-google-play"></i> Google Play</div>
-              <div className="app-badge"><i className="fab fa-apple"></i> App Store</div>
+              <a
+                href="https://play.google.com/store/apps/details?id=com.zivdahonlinegrocery.business&hl=en"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="app-badge"
+              >
+                <i className="fab fa-google-play"></i>
+                Google Play
+              </a>
+
+              <a
+                href="https://apps.apple.com/app/YOUR_APP_ID"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="app-badge"
+              >
+                <i className="fab fa-apple"></i>
+                App Store
+              </a>
             </div>
           </div>
         </div>

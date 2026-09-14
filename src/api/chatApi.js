@@ -13,6 +13,12 @@ export const chatApi = {
   requestHuman: (conversationId) =>
     apiClient.post(`${BASE}/conversations/${conversationId}/request-human`).then((r) => r.data),
 
+  // Customer-initiated end of an Assistant (BOT) conversation — distinct from the agent-only
+  // close of a HUMAN conversation (there's no equivalent client call for that; a HUMAN
+  // conversation is only ever closed from zivdah-admin). See ConversationController#end.
+  endConversation: (conversationId) =>
+    apiClient.put(`${BASE}/conversations/${conversationId}/end`).then((r) => r.data),
+
   // Incremental history — also the WS reconnect/backfill source. `afterId` omitted fetches
   // from the start of the transcript.
   getMessages: (conversationId, afterId) =>
