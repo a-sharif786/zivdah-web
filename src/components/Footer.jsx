@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { CATEGORY_META, CATEGORY_VALUES } from '../utils/categoryMeta'
 import './Footer.css'
 
 export default function Footer() {
+  const { t } = useTranslation()
   return (
     <footer className="footer">
       <div className="footer-top">
@@ -12,10 +14,10 @@ export default function Footer() {
               <span>🛒</span>
               <div>
                 <div className="footer-logo-name">Zivdah</div>
-                <div className="footer-logo-sub">Online Grocery</div>
+                <div className="footer-logo-sub">{t('footer.tagline')}</div>
               </div>
             </div>
-            <p>Fresh groceries delivered to your doorstep. Shop from a wide range of quality products at the best prices.</p>
+            <p>{t('footer.description')}</p>
             <div className="social-links">
               <a href="#"><i className="fab fa-facebook-f"></i></a>
               <a href="#"><i className="fab fa-instagram"></i></a>
@@ -26,19 +28,19 @@ export default function Footer() {
           </div>
 
           <div className="footer-col">
-            <h4>Quick Links</h4>
+            <h4>{t('footer.quickLinks')}</h4>
             <ul>
-              <li><Link to="/">Home</Link></li>
-              <li><Link to="/shop">Shop</Link></li>
-              <li><Link to="/about">About Us</Link></li>
-              <li><Link to="/contact">Contact</Link></li>
-              <li><Link to="/cart">My Cart</Link></li>
-              <li><Link to="/orders">My Orders</Link></li>
+              <li><Link to="/">{t('footer.home')}</Link></li>
+              <li><Link to="/shop">{t('footer.shop')}</Link></li>
+              <li><Link to="/about">{t('footer.aboutUs')}</Link></li>
+              <li><Link to="/contact">{t('footer.contact')}</Link></li>
+              <li><Link to="/cart">{t('footer.myCart')}</Link></li>
+              <li><Link to="/orders">{t('footer.myOrders')}</Link></li>
             </ul>
           </div>
 
           <div className="footer-col">
-            <h4>Categories</h4>
+            <h4>{t('footer.categories')}</h4>
             <ul>
               {CATEGORY_VALUES.map((cat) => (
                 <li key={cat}><Link to={`/shop/${cat}`}>{CATEGORY_META[cat].label}</Link></li>
@@ -47,12 +49,12 @@ export default function Footer() {
           </div>
 
           <div className="footer-col">
-            <h4>Contact Us</h4>
+            <h4>{t('footer.contactUs')}</h4>
             <ul className="contact-info">
-              <li><i className="fas fa-map-marker-alt"></i> Unit 305, Kuber Complex, New Link Road, Opp to Laxmi Industrial Estate, Andheri West, Mumbai-400053</li>
+              <li><i className="fas fa-map-marker-alt"></i> {t('footer.address')}</li>
               <li><i className="fas fa-phone-alt"></i> (022) 44830442</li>
               <li><i className="fas fa-envelope"></i> contact@zivdahonlinegrocery.com</li>
-              <li><i className="fas fa-clock"></i> Mon–Sat: 8AM – 9PM</li>
+              <li><i className="fas fa-clock"></i> {t('footer.hours')}</li>
             </ul>
             <div className="app-badges">
               <a
@@ -62,7 +64,7 @@ export default function Footer() {
                 className="app-badge"
               >
                 <i className="fab fa-google-play"></i>
-                Google Play
+                {t('footer.googlePlay')}
               </a>
 
               <a
@@ -72,7 +74,7 @@ export default function Footer() {
                 className="app-badge"
               >
                 <i className="fab fa-apple"></i>
-                App Store
+                {t('footer.appStore')}
               </a>
             </div>
           </div>
@@ -81,7 +83,7 @@ export default function Footer() {
 
       <div className="footer-bottom">
         <div className="container footer-bottom-inner">
-          <p>© 2025 Zivdah Online Grocery. All rights reserved.</p>
+          <p>{t('footer.copyright')}</p>
           <div className="payment-icons">
             <i className="fab fa-cc-visa"></i>
             <i className="fab fa-cc-mastercard"></i>
@@ -90,9 +92,9 @@ export default function Footer() {
           </div>
         </div>
         <div className="container footer-policy-links">
-          <Link to="/privacy-policy">Privacy Policy</Link>
-          <Link to="/refund-policy">Refund &amp; Returns Policy</Link>
-          <Link to="/cancellation-policy">Cancellation Policy</Link>
+          <Link to="/privacy-policy">{t('footer.privacyPolicy')}</Link>
+          <Link to="/refund-policy">{t('footer.refundPolicy')}</Link>
+          <Link to="/cancellation-policy">{t('footer.cancellationPolicy')}</Link>
         </div>
         <div className="container footer-legal">
           <span>CIN: U47912MH2025PTC437794</span>

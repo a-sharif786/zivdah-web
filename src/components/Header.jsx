@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
 import { useNotifications } from '../context/NotificationContext'
@@ -9,13 +10,14 @@ import './Header.css'
 import logo from '../assets/logo.svg'
 
 const navLinks = [
-  { label: 'Home', path: '/' },
-  { label: 'Shop', path: '/shop' },
-  { label: 'About', path: '/about' },
-  { label: 'Contact', path: '/contact' },
+  { labelKey: 'header.navHome', path: '/' },
+  { labelKey: 'header.navShop', path: '/shop' },
+  { labelKey: 'header.navAbout', path: '/about' },
+  { labelKey: 'header.navContact', path: '/contact' },
 ]
 
 export default function Header() {
+  const { t, i18n } = useTranslation()
   const { count } = useCart()
   const { user, isAuthenticated, logout } = useAuth()
   const { unreadCount } = useNotifications()
@@ -47,13 +49,17 @@ export default function Header() {
     navigate('/')
   }
 
+  const toggleLanguage = () => {
+    i18n.changeLanguage(i18n.language === 'hi' ? 'en' : 'hi')
+  }
+
   return (
     <header className="header">
       <div className="header-top">
         <div className="container header-top-inner">
           <span><i className="fas fa-phone-alt"></i> (022) 44830442</span>
           <span><i className="fas fa-envelope"></i> contact@zivdahonlinegrocery.com</span>
-          <span><i className="fas fa-truck"></i> Free delivery on orders over ₹500</span>
+          <span><i className="fas fa-truck"></i> {t('common.freeDeliveryBanner')}</span>
         </div>
       </div>
 
@@ -73,7 +79,7 @@ export default function Header() {
           <form className="search-bar" onSubmit={handleSearch}>
             <input
               type="text"
-              placeholder="Search for groceries, fruits, vegetables..."
+              placeholder={t('header.searchPlaceholder')}
               value={query}
               onChange={e => setQuery(e.target.value)}
             />
@@ -82,8 +88,15 @@ export default function Header() {
 
           <div className="header-actions">
             <button
+              className="action-btn lang-btn"
+              title={t('header.changeLanguage')}
+              onClick={toggleLanguage}
+            >
+              {i18n.language === 'hi' ? 'EN' : 'हिं'}
+            </button>
+            <button
               className="action-btn"
-              title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+              title={theme === 'dark' ? t('header.switchToLight') : t('header.switchToDark')}
               onClick={toggleTheme}
             >
               <i className={`fas fa-${theme === 'dark' ? 'sun' : 'moon'}`}></i>
@@ -91,27 +104,27 @@ export default function Header() {
             {/* Hidden on mobile (see Header.css ≤768px block) — redundant there with the
                 "Shop" link already in the hamburger nav below, and dropping it is one of
                 the things that makes the header row actually fit on a phone. */}
-            <Link to="/shop" className="action-btn action-btn-quicklink" title="Shop">
+            <Link to="/shop" className="action-btn action-btn-quicklink" title={t('header.shop')}>
               <i className="fas fa-store"></i>
             </Link>
             {isAuthenticated && (
-              <Link to="/wishlist" className="action-btn" title="Wishlist">
+              <Link to="/wishlist" className="action-btn" title={t('header.wishlist')}>
                 <i className="fas fa-heart"></i>
               </Link>
             )}
             {isAuthenticated && (
-              <Link to="/notifications" className="action-btn" title="Notifications">
+              <Link to="/notifications" className="action-btn" title={t('header.notifications')}>
                 <i className="fas fa-bell"></i>
                 {unreadCount > 0 && <span className="cart-badge">{unreadCount}</span>}
               </Link>
             )}
-            <Link to="/cart" className="action-btn cart-btn" title="Cart">
+            <Link to="/cart" className="action-btn cart-btn" title={t('header.cart')}>
               <i className="fas fa-shopping-cart"></i>
               {count > 0 && <span className="cart-badge">{count}</span>}
             </Link>
 
             <div className="account-menu">
-              <button className="action-btn" title="Account" onClick={() => setAccountOpen((o) => !o)}>
+              <button className="action-btn" title={t('header.account')} onClick={() => setAccountOpen((o) => !o)}>
                 <i className="fas fa-user"></i>
               </button>
               {accountOpen && (
@@ -120,17 +133,17 @@ export default function Header() {
                   <div className="account-dropdown">
                     {isAuthenticated ? (
                       <>
-                        <div className="account-dropdown-greeting">Hi, {user.name?.split(' ')[0]}</div>
-                        <Link to="/account" onClick={() => setAccountOpen(false)}>My Account</Link>
-                        <Link to="/orders" onClick={() => setAccountOpen(false)}>My Orders</Link>
-                        <Link to="/notifications" onClick={() => setAccountOpen(false)}>Notifications</Link>
-                        <Link to="/wishlist" onClick={() => setAccountOpen(false)}>Wishlist</Link>
-                        <button onClick={handleLogout}>Log Out</button>
+                        <div className="account-dropdown-greeting">{t('header.greeting', { name: user.name?.split(' ')[0] })}</div>
+                        <Link to="/account" onClick={() => setAccountOpen(false)}>{t('header.myAccount')}</Link>
+                        <Link to="/orders" onClick={() => setAccountOpen(false)}>{t('header.myOrders')}</Link>
+                        <Link to="/notifications" onClick={() => setAccountOpen(false)}>{t('header.notifications')}</Link>
+                        <Link to="/wishlist" onClick={() => setAccountOpen(false)}>{t('header.wishlist')}</Link>
+                        <button onClick={handleLogout}>{t('header.logOut')}</button>
                       </>
                     ) : (
                       <>
-                        <Link to="/login" onClick={() => setAccountOpen(false)}>Log In</Link>
-                        <Link to="/register" onClick={() => setAccountOpen(false)}>Create Account</Link>
+                        <Link to="/login" onClick={() => setAccountOpen(false)}>{t('header.logIn')}</Link>
+                        <Link to="/register" onClick={() => setAccountOpen(false)}>{t('header.createAccount')}</Link>
                       </>
                     )}
                   </div>
@@ -150,7 +163,7 @@ export default function Header() {
           <ul className="nav-links">
             {navLinks.map(link => (
               <li key={link.path}>
-                <Link to={link.path} onClick={() => setMenuOpen(false)}>{link.label}</Link>
+                <Link to={link.path} onClick={() => setMenuOpen(false)}>{t(link.labelKey)}</Link>
               </li>
             ))}
           </ul>

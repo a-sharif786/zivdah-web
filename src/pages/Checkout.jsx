@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import QRCode from 'qrcode'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
 import { orderApi } from '../api/orderApi'
@@ -9,6 +10,12 @@ import { formatCurrency } from '../utils/format'
 import './Checkout.css'
 
 const PAYMENT_METHOD_MAP = { cod: 'COD', upi: 'UPI', card: 'CARD', netbanking: 'NET_BANKING' }
+
+// EcomWorldPay's UPI status-check is polled every 4s while a QR is showing, for up to ~6
+// minutes — long enough for a customer to switch to their UPI app and pay, short enough that an
+// abandoned tab doesn't poll forever.
+const UPI_POLL_INTERVAL_MS = 4000
+const UPI_POLL_MAX_ATTEMPTS = 90
 
 export default function Checkout() {
   const { items, total, clearCart, appliedCoupon } = useCart()
@@ -28,6 +35,11 @@ export default function Checkout() {
     address: '', city: '', state: '', pincode: '',
     payment: 'cod',
   })
+  // UPI QR flow — populated once EcomWorldPay's QR API returns an intent (see placeOrder).
+  const [upiPayment, setUpiPayment] = useState(null) // { orderId, paymentId, qrDataUrl }
+  const [upiStatus, setUpiStatus] = useState('processing') // 'processing' | 'failed' | 'timeout'
+  const [checkingStatus, setCheckingStatus] = useState(false)
+  const pollTimerRef = useRef(null)
 
   const applyAddress = (a) => {
     setForm((f) => ({
@@ -108,24 +120,118 @@ export default function Checkout() {
         })),
       })
 
+      const method = PAYMENT_METHOD_MAP[form.payment]
       const payment = await paymentApi.initiate({
         orderId: order.orderId,
         userId: user.id,
         amount: grandTotal,
         currency: 'INR',
-        method: PAYMENT_METHOD_MAP[form.payment],
+        method,
+        ...(method === 'UPI' ? {
+          firstName: form.firstName,
+          lastName: form.lastName.trim() || form.firstName,
+          mobile: form.phone.replace(/[^0-9]/g, ''),
+          email: form.email,
+        } : {}),
       })
-      // No real payment gateway exists on the backend to redirect to — simulate
-      // an immediate successful payment for every method, COD included.
-      await paymentApi.markSuccess(payment.paymentId)
 
-      await clearCart()
-      navigate(`/orders/${order.orderId}`, { state: { justPlaced: true } })
+      if (method !== 'UPI') {
+        // No real gateway integration for these yet — simulate an immediate successful payment.
+        await paymentApi.markSuccess(payment.paymentId)
+        await clearCart()
+        navigate(`/orders/${order.orderId}`, { state: { justPlaced: true } })
+        return
+      }
+
+
+      console.log(payment)
+
+      if (!payment.upiIntent) {
+        throw new Error('Could not start UPI payment. Please choose a different payment method.')
+      }
+      const qrDataUrl = await QRCode.toDataURL(payment.upiIntent)
+      setUpiPayment({ orderId: order.orderId, paymentId: payment.paymentId, qrDataUrl })
+      setUpiStatus('processing')
+      setStep(3)
     } catch (err) {
       setError(err.message)
     } finally {
       setPlacing(false)
     }
+  }
+
+  // Polls our own payment record (cheap — just a DB read) while the QR is showing, so the page
+  // advances automatically once EcomWorldPay's async callback lands. "Check now" below instead
+  // forces an active poll against the gateway itself, for when the callback is delayed/missed.
+  useEffect(() => {
+    if (step !== 3 || !upiPayment || upiStatus !== 'processing') return undefined
+    let cancelled = false
+    let attempts = 0
+
+    const finishIfSettled = async (latest) => {
+      if (latest.status === 'SUCCESS') {
+        setUpiStatus('success')
+        await clearCart()
+        navigate(`/orders/${upiPayment.orderId}`, { state: { justPlaced: true } })
+        return true
+      }
+      if (latest.status === 'FAILED') {
+        setUpiStatus('failed')
+        return true
+      }
+      return false
+    }
+
+    const poll = async () => {
+      attempts += 1
+      try {
+        const latest = await paymentApi.getById(upiPayment.paymentId)
+        if (cancelled) return
+        if (await finishIfSettled(latest)) return
+      } catch {
+        // transient network error — keep polling rather than failing the whole checkout
+      }
+      if (cancelled) return
+      if (attempts < UPI_POLL_MAX_ATTEMPTS) {
+        pollTimerRef.current = setTimeout(poll, UPI_POLL_INTERVAL_MS)
+      } else {
+        setUpiStatus('timeout')
+      }
+    }
+
+    pollTimerRef.current = setTimeout(poll, UPI_POLL_INTERVAL_MS)
+    return () => {
+      cancelled = true
+      clearTimeout(pollTimerRef.current)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, upiPayment, upiStatus])
+
+  const checkUpiStatusNow = async () => {
+    if (!upiPayment) return
+    setCheckingStatus(true)
+    setError(null)
+    try {
+      const latest = await paymentApi.getGatewayStatus(upiPayment.paymentId)
+      if (latest.status === 'SUCCESS') {
+        setUpiStatus('success')
+        await clearCart()
+        navigate(`/orders/${upiPayment.orderId}`, { state: { justPlaced: true } })
+      } else if (latest.status === 'FAILED') {
+        setUpiStatus('failed')
+      }
+      // still PENDING/PROCESSING — the background poller above keeps waiting
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setCheckingStatus(false)
+    }
+  }
+
+  const retryPayment = () => {
+    setUpiPayment(null)
+    setUpiStatus('processing')
+    setStep(2)
   }
 
   const handleSubmit = (e) => {
@@ -160,6 +266,7 @@ export default function Checkout() {
 
           {error && <div className="auth-error">{error}</div>}
 
+          {step < 3 && (
           <form onSubmit={handleSubmit} className="checkout-form">
             {step === 1 && (
               <div>
@@ -246,10 +353,10 @@ export default function Checkout() {
                 <h3>Payment Method</h3>
                 <div className="payment-options">
                   {[
-                    { value: 'cod', label: 'Cash on Delivery', icon: 'fas fa-money-bill-wave' },
-                    { value: 'upi', label: 'UPI / Google Pay', icon: 'fas fa-mobile-alt' },
-                    { value: 'card', label: 'Credit / Debit Card', icon: 'fas fa-credit-card' },
-                    { value: 'netbanking', label: 'Net Banking', icon: 'fas fa-university' },
+                    // { value: 'cod', label: 'Cash on Delivery', icon: 'fas fa-money-bill-wave' },
+                    { value: 'upi', label: 'UPI / Qr Code', icon: 'fas fa-mobile-alt' },
+                    // { value: 'card', label: 'Credit / Debit Card', icon: 'fas fa-credit-card' },
+                    // { value: 'netbanking', label: 'Net Banking', icon: 'fas fa-university' },
                   ].map(opt => (
                     <label key={opt.value} className={`payment-option ${form.payment === opt.value ? 'selected' : ''}`}>
                       <input type="radio" name="payment" value={opt.value} checked={form.payment === opt.value} onChange={handleChange} />
@@ -259,8 +366,9 @@ export default function Checkout() {
                   ))}
                 </div>
                 <p className="auth-hint" style={{ marginTop: -8 }}>
-                  This is a demo store — there's no real payment gateway. Your order will be confirmed immediately
-                  regardless of the method chosen.
+                  {form.payment === 'upi'
+                    ? "You'll be shown a UPI QR code to scan and pay with any UPI app."
+                    : "This payment method doesn't have a live gateway yet — your order will be confirmed immediately."}
                 </p>
               </div>
             )}
@@ -277,6 +385,56 @@ export default function Checkout() {
               </button>
             </div>
           </form>
+          )}
+
+          {step === 3 && upiPayment && (
+            <div className="checkout-form upi-qr-panel">
+              <h3>Scan &amp; Pay via UPI</h3>
+
+              {upiStatus === 'processing' && (
+                <>
+                  <div className="upi-qr-image">
+                    <img src={upiPayment.qrDataUrl} alt="UPI QR code" />
+                  </div>
+                  <p className="upi-qr-amount">{formatCurrency(grandTotal)}</p>
+                  <p className="auth-hint">
+                    Scan this code with any UPI app (Google Pay, PhonePe, Paytm...) to pay. This page updates
+                    automatically once the payment is received.
+                  </p>
+                  <div className="upi-qr-status">
+                    <i className="fas fa-spinner fa-spin"></i> Waiting for payment confirmation...
+                  </div>
+                  <button type="button" className="btn-secondary" onClick={checkUpiStatusNow} disabled={checkingStatus}>
+                    {checkingStatus ? 'Checking...' : "I've paid, check now"}
+                  </button>
+                </>
+              )}
+
+              {upiStatus === 'failed' && (
+                <>
+                  <p className="auth-error">Payment failed or was declined. Please try again.</p>
+                  <button type="button" className="btn-primary" onClick={retryPayment}>
+                    Choose Payment Method Again
+                  </button>
+                </>
+              )}
+
+              {upiStatus === 'timeout' && (
+                <>
+                  <p className="auth-hint">
+                    Still waiting for confirmation — if you've already paid, this can occasionally take a little
+                    longer to reflect.
+                  </p>
+                  <button type="button" className="btn-secondary" onClick={checkUpiStatusNow} disabled={checkingStatus}>
+                    {checkingStatus ? 'Checking...' : 'Check Again'}
+                  </button>
+                  <button type="button" className="btn-primary" onClick={retryPayment} style={{ marginLeft: 12 }}>
+                    Choose a Different Method
+                  </button>
+                </>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="checkout-summary">

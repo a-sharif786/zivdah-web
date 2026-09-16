@@ -12,4 +12,8 @@ export const paymentApi = {
   markSuccess: (paymentId) => apiClient.put(`${BASE}/success/${paymentId}`).then((r) => r.data),
 
   markFailed: (paymentId) => apiClient.put(`${BASE}/failed/${paymentId}`).then((r) => r.data),
+
+  // Re-polls EcomWorldPay's status-check API for a UPI payment stuck in PROCESSING (the async
+  // callback can be missed/delayed) — see zivdah-payment-service PaymentController.
+  getGatewayStatus: (paymentId) => apiClient.get(`${BASE}/${paymentId}/gateway-status`).then((r) => r.data),
 };

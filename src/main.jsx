@@ -7,6 +7,7 @@ import { WishlistProvider } from './context/WishlistContext'
 import { NotificationProvider } from './context/NotificationContext'
 import { ChatProvider } from './context/ChatContext'
 import { ThemeProvider } from './context/ThemeContext'
+import './i18n'
 import './index.css'
 import App from './App.jsx'
 

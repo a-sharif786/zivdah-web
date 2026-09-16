@@ -3,6 +3,7 @@ import Header from './components/Header'
 import Footer from './components/Footer'
 import ChatWidget from './components/ChatWidget'
 import ProtectedRoute from './components/ProtectedRoute'
+import ScrollToTop from './components/ScrollToTop'
 import Home from './pages/Home'
 import Shop from './pages/Shop'
 import ProductDetail from './pages/ProductDetail'
@@ -27,6 +28,7 @@ import NotFound from './pages/NotFound'
 function App() {
   return (
     <>
+      <ScrollToTop />
       <Header />
       <main style={{ flex: 1 }}>
         <Routes>

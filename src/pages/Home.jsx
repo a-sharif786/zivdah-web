@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import ProductCard from '../components/ProductCard'
 import { productApi, bannerApi, categoryApi } from '../api/productApi'
 import { formatCurrency } from '../utils/format'
 import './Home.css'
 
 export default function Home() {
+  const { t } = useTranslation()
   const [banners, setBanners] = useState([])
   const [slide, setSlide] = useState(0)
   const [featured, setFeatured] = useState([])
@@ -36,11 +38,16 @@ export default function Home() {
     e.preventDefault()
     // No newsletter-subscription API exists on the backend — kept as a client-side
     // acknowledgement only, same as before, rather than inventing one.
-    alert('Thank you for subscribing!')
+    alert(t('home.subscribeThankYou'))
     setEmail('')
   }
 
   const activeBanner = banners[slide]
+  const testimonialRatings = [5, 5, 4]
+  const testimonials = t('home.testimonials', { returnObjects: true }).map((item, i) => ({
+    ...item,
+    rating: testimonialRatings[i],
+  }))
 
   return (
     <div className="home">
@@ -55,11 +62,11 @@ export default function Home() {
       >
         <div className="container hero-inner">
           <div className="hero-content">
-            <h1 className="hero-title">{activeBanner?.title ?? 'Fresh Groceries, Delivered Fast'}</h1>
-            <p className="hero-subtitle">Farm fresh produce and everyday essentials delivered to your door</p>
+            <h1 className="hero-title">{activeBanner?.title ?? t('home.heroTitleDefault')}</h1>
+            <p className="hero-subtitle">{t('home.heroSubtitle')}</p>
             <div className="hero-actions">
-              <Link to="/shop" className="btn-primary">Shop Now <i className="fas fa-arrow-right"></i></Link>
-              <Link to="/about" className="hero-learn">Learn More</Link>
+              <Link to="/shop" className="btn-primary">{t('common.shopNow')} <i className="fas fa-arrow-right"></i></Link>
+              <Link to="/about" className="hero-learn">{t('home.learnMore')}</Link>
             </div>
           </div>
         </div>
@@ -75,10 +82,10 @@ export default function Home() {
       {/* STATS */}
       <section className="stats-bar">
         <div className="container stats-inner">
-          <div className="stat"><i className="fas fa-truck"></i><div><strong>Free Delivery</strong><span>On orders over ₹500</span></div></div>
-          <div className="stat"><i className="fas fa-leaf"></i><div><strong>100% Fresh</strong><span>Directly from farms</span></div></div>
-          <div className="stat"><i className="fas fa-shield-alt"></i><div><strong>Secure Payment</strong><span>100% safe & secure</span></div></div>
-          <div className="stat"><i className="fas fa-headset"></i><div><strong>24/7 Support</strong><span>Dedicated support</span></div></div>
+          <div className="stat"><i className="fas fa-truck"></i><div><strong>{t('home.statFreeDeliveryTitle')}</strong><span>{t('home.statFreeDeliverySub')}</span></div></div>
+          <div className="stat"><i className="fas fa-leaf"></i><div><strong>{t('home.stat100FreshTitle')}</strong><span>{t('home.stat100FreshSub')}</span></div></div>
+          <div className="stat"><i className="fas fa-shield-alt"></i><div><strong>{t('home.statSecureTitle')}</strong><span>{t('home.statSecureSub')}</span></div></div>
+          <div className="stat"><i className="fas fa-headset"></i><div><strong>{t('home.statSupportTitle')}</strong><span>{t('home.statSupportSub')}</span></div></div>
         </div>
       </section>
 
@@ -87,10 +94,10 @@ export default function Home() {
         <div className="container">
           <div className="section-header">
             <div>
-              <h2 className="section-title">Shop by Category</h2>
-              <p className="section-subtitle">Find what you need quickly</p>
+              <h2 className="section-title">{t('home.shopByCategory')}</h2>
+              <p className="section-subtitle">{t('home.findWhatYouNeed')}</p>
             </div>
-            <Link to="/shop" className="view-all">View All <i className="fas fa-chevron-right"></i></Link>
+            <Link to="/shop" className="view-all">{t('common.viewAll')} <i className="fas fa-chevron-right"></i></Link>
           </div>
           <div className="categories-grid">
             {categories.map((cat) => (
@@ -128,10 +135,10 @@ export default function Home() {
         <div className="container">
           <div className="section-header">
             <div>
-              <h2 className="section-title">Featured Products</h2>
-              <p className="section-subtitle">Fresh products for you</p>
+              <h2 className="section-title">{t('home.featuredProducts')}</h2>
+              <p className="section-subtitle">{t('home.freshProductsForYou')}</p>
             </div>
-            <Link to="/shop" className="view-all">View All <i className="fas fa-chevron-right"></i></Link>
+            <Link to="/shop" className="view-all">{t('common.viewAll')} <i className="fas fa-chevron-right"></i></Link>
           </div>
           <div className="grid-4">
             {featured.map((p) => <ProductCard key={p.id} product={p} />)}
@@ -144,10 +151,10 @@ export default function Home() {
         <section className="deals-banner">
           <div className="container deals-inner">
             <div className="deal-left">
-              <span className="deal-tag">Special Offer</span>
-              <h2>Deals of the Day</h2>
-              <p>Discounted prices on select products, while stocks last.</p>
-              <Link to="/shop" className="btn-primary">Shop Now <i className="fas fa-tag"></i></Link>
+              <span className="deal-tag">{t('home.specialOffer')}</span>
+              <h2>{t('home.dealsOfTheDay')}</h2>
+              <p>{t('home.dealsDescription')}</p>
+              <Link to="/shop" className="btn-primary">{t('common.shopNow')} <i className="fas fa-tag"></i></Link>
             </div>
             <div className="deal-right">
               <div className="deal-items">
@@ -172,10 +179,10 @@ export default function Home() {
           <div className="container">
             <div className="section-header">
               <div>
-                <h2 className="section-title">Today's Deals</h2>
-                <p className="section-subtitle">Limited time offers — grab them fast!</p>
+                <h2 className="section-title">{t('home.todaysDeals')}</h2>
+                <p className="section-subtitle">{t('home.limitedTimeOffers')}</p>
               </div>
-              <Link to="/shop" className="view-all">See All Deals <i className="fas fa-chevron-right"></i></Link>
+              <Link to="/shop" className="view-all">{t('home.seeAllDeals')} <i className="fas fa-chevron-right"></i></Link>
             </div>
             <div className="grid-4">
               {deals.slice(0, 8).map((p) => <ProductCard key={p.id} product={p} />)}
@@ -187,24 +194,20 @@ export default function Home() {
       {/* TESTIMONIALS */}
       <section className="section testimonials" style={{ background: 'var(--white)' }}>
         <div className="container">
-          <h2 className="section-title" style={{ textAlign: 'center' }}>What Our Customers Say</h2>
-          <p className="section-subtitle" style={{ textAlign: 'center', marginBottom: 40 }}>Real reviews from happy customers</p>
+          <h2 className="section-title" style={{ textAlign: 'center' }}>{t('home.whatCustomersSay')}</h2>
+          <p className="section-subtitle" style={{ textAlign: 'center', marginBottom: 40 }}>{t('home.realReviews')}</p>
           <div className="grid-3">
-            {[
-              { name: 'Priya Sharma', text: 'Amazing quality and super fast delivery. The vegetables were so fresh, better than my local market!', rating: 5 },
-              { name: 'Rahul Mehta', text: 'Great prices and wide variety. I love the weekly deals. Will definitely order again!', rating: 5 },
-              { name: 'Anita Patel', text: 'Fantastic service. The app is easy to use and checkout is seamless. My go-to grocery store!', rating: 4 },
-            ].map((t, i) => (
+            {testimonials.map((item, i) => (
               <div key={i} className="testimonial-card">
                 <div className="t-rating">
                   {Array.from({ length: 5 }, (_, j) => (
-                    <i key={j} className={`fas fa-star ${j < t.rating ? 'filled' : ''}`}></i>
+                    <i key={j} className={`fas fa-star ${j < item.rating ? 'filled' : ''}`}></i>
                   ))}
                 </div>
-                <p>"{t.text}"</p>
+                <p>"{item.text}"</p>
                 <div className="t-author">
-                  <div className="t-avatar">{t.name.charAt(0)}</div>
-                  <strong>{t.name}</strong>
+                  <div className="t-avatar">{item.name.charAt(0)}</div>
+                  <strong>{item.name}</strong>
                 </div>
               </div>
             ))}
@@ -216,18 +219,18 @@ export default function Home() {
       <section className="newsletter">
         <div className="container newsletter-inner">
           <div>
-            <h2>Subscribe to Our Newsletter</h2>
-            <p>Get the latest deals, new arrivals, and exclusive offers straight to your inbox.</p>
+            <h2>{t('home.subscribeTitle')}</h2>
+            <p>{t('home.subscribeDescription')}</p>
           </div>
           <form className="newsletter-form" onSubmit={handleNewsletter}>
             <input
               type="email"
-              placeholder="Enter your email address"
+              placeholder={t('home.emailPlaceholder')}
               value={email}
               onChange={e => setEmail(e.target.value)}
               required
             />
-            <button type="submit" className="btn-primary">Subscribe</button>
+            <button type="submit" className="btn-primary">{t('home.subscribe')}</button>
           </form>
         </div>
       </section>

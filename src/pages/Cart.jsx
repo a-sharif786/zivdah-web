@@ -134,7 +134,7 @@ export default function Cart() {
 
           {appliedCoupon ? (
             <div className="coupon-row">
-              <span style={{ flex: 1, fontSize: 13, color: 'var(--primary)', fontWeight: 600 }}>
+              <span style={{ flex: 1, minWidth: 0, fontSize: 13, color: 'var(--primary)', fontWeight: 600 }}>
                 <i className="fas fa-check-circle"></i> {appliedCoupon.code} applied
               </span>
               <button type="button" className="btn-secondary" onClick={removeCoupon}>Remove</button>
