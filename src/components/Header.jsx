@@ -46,7 +46,7 @@ export default function Header() {
   const handleLogout = () => {
     setAccountOpen(false)
     logout()
-    navigate('/')
+    navigate('/login')
   }
 
   const toggleLanguage = () => {

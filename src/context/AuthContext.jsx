@@ -53,11 +53,16 @@ export function AuthProvider({ children }) {
   }, []);
 
   const logout = useCallback(() => {
+    // Capture the token before clearing it below — getFcmToken() awaits service worker
+    // registration + the notification permission prompt, so by the time its promise
+    // resolves localStorage (and the request interceptor's Authorization header) would
+    // otherwise already be empty, and the call below would 401.
+    const authToken = readStoredAuth()?.token;
     // Only deactivates this browser's push registration — other signed-in devices/browsers
     // stay registered. Resolves from Firebase's local cache, so this doesn't re-prompt for
     // permission; best-effort either way — clear the local session regardless of outcome.
     getFcmToken()
-      .then((token) => authApi.logout(token ?? undefined))
+      .then((token) => authApi.logout(token ?? undefined, authToken))
       .catch(() => {});
     localStorage.removeItem(AUTH_STORAGE_KEY);
     setAuth(null);

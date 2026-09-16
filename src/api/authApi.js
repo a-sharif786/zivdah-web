@@ -20,7 +20,17 @@ export const authApi = {
 
   // fcmToken is optional — when passed, only this device's push registration is
   // deactivated, other signed-in devices/browsers stay registered.
-  logout: (fcmToken) => apiClient.post(`${BASE}/logout`, fcmToken ? { fcmToken } : {}).then((r) => r.data),
+  // authToken overrides the Authorization header explicitly — the caller (AuthContext)
+  // clears localStorage right after kicking this off, so by the time this actually sends
+  // the request interceptor's own localStorage read may already be empty.
+  logout: (fcmToken, authToken) =>
+    apiClient
+      .post(
+        `${BASE}/logout`,
+        fcmToken ? { fcmToken } : {},
+        authToken ? { headers: { Authorization: `Bearer ${authToken}` } } : undefined
+      )
+      .then((r) => r.data),
 
   getUserById: (userId) => apiClient.get(`${BASE}/byUserId/${userId}`).then((r) => r.data),
 

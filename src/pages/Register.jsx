@@ -114,7 +114,7 @@ export default function Register() {
                 onChange={(e) => setOtp({ ...otp, emailOtp: e.target.value })}
               />
             </div>
-            <p className="auth-hint">Demo backend — both OTPs are always 123456.</p>
+            <p className="auth-hint">Check your email for the verification code. Demo backend — the mobile OTP is always 123456.</p>
             <button className="btn-primary auth-submit" disabled={loading}>
               {loading ? 'Verifying...' : 'Verify & Create Account'}
             </button>
