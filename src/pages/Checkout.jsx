@@ -33,7 +33,7 @@ export default function Checkout() {
   const [form, setForm] = useState({
     firstName: '', lastName: '', email: user?.email ?? '', phone: user?.mobile ?? '',
     address: '', city: '', state: '', pincode: '',
-    payment: 'cod',
+    payment: 'upi', // the only payment method actually offered right now (see the radio list below)
   })
   // UPI QR flow — populated once EcomWorldPay's QR API returns an intent (see placeOrder).
   const [upiPayment, setUpiPayment] = useState(null) // { orderId, paymentId, qrDataUrl }
