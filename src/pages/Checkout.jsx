@@ -38,6 +38,9 @@ export default function Checkout() {
   // UPI QR flow — populated once EcomWorldPay's QR API returns an intent (see placeOrder).
   const [upiPayment, setUpiPayment] = useState(null) // { orderId, paymentId, qrDataUrl }
   const [upiStatus, setUpiStatus] = useState('processing') // 'processing' | 'failed' | 'timeout'
+  // The payment gateway's own error text for a FAILED payment (see payment-service's
+  // PaymentResponseDto.failureReason) — shown to the customer verbatim, whatever it says.
+  const [upiFailureReason, setUpiFailureReason] = useState(null)
   const [checkingStatus, setCheckingStatus] = useState(false)
   const pollTimerRef = useRef(null)
 
@@ -143,11 +146,10 @@ export default function Checkout() {
         return
       }
 
-
-      console.log(payment)
-
       if (!payment.upiIntent) {
-        throw new Error('Could not start UPI payment. Please choose a different payment method.')
+        // The gateway rejected intent creation outright (e.g. duplicate invoice, IP not
+        // whitelisted, amount below minimum) — surface its own message, not a generic one.
+        throw new Error(payment.failureReason || 'Could not start UPI payment. Please choose a different payment method.')
       }
       const qrDataUrl = await QRCode.toDataURL(payment.upiIntent)
       setUpiPayment({ orderId: order.orderId, paymentId: payment.paymentId, qrDataUrl })
@@ -176,6 +178,7 @@ export default function Checkout() {
         return true
       }
       if (latest.status === 'FAILED') {
+        setUpiFailureReason(latest.failureReason || null)
         setUpiStatus('failed')
         return true
       }
@@ -218,6 +221,7 @@ export default function Checkout() {
         await clearCart()
         navigate(`/orders/${upiPayment.orderId}`, { state: { justPlaced: true } })
       } else if (latest.status === 'FAILED') {
+        setUpiFailureReason(latest.failureReason || null)
         setUpiStatus('failed')
       }
       // still PENDING/PROCESSING — the background poller above keeps waiting
@@ -231,6 +235,7 @@ export default function Checkout() {
   const retryPayment = () => {
     setUpiPayment(null)
     setUpiStatus('processing')
+    setUpiFailureReason(null)
     setStep(2)
   }
 
@@ -412,7 +417,7 @@ export default function Checkout() {
 
               {upiStatus === 'failed' && (
                 <>
-                  <p className="auth-error">Payment failed or was declined. Please try again.</p>
+                  <p className="auth-error">{upiFailureReason || 'Payment failed or was declined. Please try again.'}</p>
                   <button type="button" className="btn-primary" onClick={retryPayment}>
                     Choose Payment Method Again
                   </button>
