@@ -5,6 +5,11 @@ const BASE = '/restful/v1/api/payments';
 export const paymentApi = {
   initiate: (payload) => apiClient.post(`${BASE}/initiate`, payload).then((r) => r.data),
 
+  // Attaches the real orderId to a payment intent that was validated/created before the order
+  // existed — call right after orderApi.create() succeeds (see Checkout.jsx).
+  linkOrder: (paymentId, orderId) =>
+    apiClient.put(`${BASE}/${paymentId}/link-order`, { orderId }).then((r) => r.data),
+
   getById: (paymentId) => apiClient.get(`${BASE}/${paymentId}`).then((r) => r.data),
 
   getByOrder: (orderId) => apiClient.get(`${BASE}/order/${orderId}`).then((r) => r.data),

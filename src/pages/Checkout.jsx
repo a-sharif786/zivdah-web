@@ -17,6 +17,13 @@ const PAYMENT_METHOD_MAP = { cod: 'COD', upi: 'UPI', card: 'CARD', netbanking: '
 const UPI_POLL_INTERVAL_MS = 4000
 const UPI_POLL_MAX_ATTEMPTS = 90
 
+// EcomWorldPay's own UPI intent bounds (inferred from its rejection text — "Please generate
+// intent again within ₹100 - ₹25000 amount range" — there's no config/endpoint exposing these).
+// Checked client-side so an out-of-range cart never reaches the backend at all, and never
+// creates an order.
+const UPI_MIN_AMOUNT = 100
+const UPI_MAX_AMOUNT = 25000
+
 export default function Checkout() {
   const { items, total, clearCart, appliedCoupon } = useCart()
   const { user } = useAuth()
@@ -33,7 +40,7 @@ export default function Checkout() {
   const [form, setForm] = useState({
     firstName: '', lastName: '', email: user?.email ?? '', phone: user?.mobile ?? '',
     address: '', city: '', state: '', pincode: '',
-    payment: 'upi', // the only payment method actually offered right now (see the radio list below)
+    payment: 'upi', // default selection — see the radio list below for what's actually offered
   })
   // UPI QR flow — populated once EcomWorldPay's QR API returns an intent (see placeOrder).
   const [upiPayment, setUpiPayment] = useState(null) // { orderId, paymentId, qrDataUrl }
@@ -43,6 +50,10 @@ export default function Checkout() {
   const [upiFailureReason, setUpiFailureReason] = useState(null)
   const [checkingStatus, setCheckingStatus] = useState(false)
   const pollTimerRef = useRef(null)
+  // One id per checkout attempt, shared by the order-create and payment-initiate calls (see
+  // placeOrder). Reset below whenever the cart actually changes; kept as-is across a failed
+  // attempt so retrying "Place Order" is idempotent instead of creating a duplicate order/payment.
+  const checkoutRefRef = useRef(null)
 
   const applyAddress = (a) => {
     setForm((f) => ({
@@ -78,12 +89,44 @@ export default function Checkout() {
   const discount = appliedCoupon?.discountAmount ?? 0
   const grandTotal = +(total + delivery + tax - discount).toFixed(2)
 
+  // A materially different cart/coupon is a new checkout attempt — start it with a fresh id.
+  // `items`/`appliedCoupon` are stable references from CartContext (state, not recreated on
+  // unrelated re-renders), so this doesn't fire on every render — only when the cart really changes.
+  useEffect(() => {
+    checkoutRefRef.current = null
+  }, [items, total, appliedCoupon])
+
   const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value })
+
+  // Runs before any network call — catches the common failure classes for free (no round-trip,
+  // no order/payment ever created for these).
+  const validateBeforeSubmit = () => {
+    if (items.length === 0) {
+      setError('Your cart is empty.')
+      return false
+    }
+    if (!form.address.trim() || !form.city.trim() || !form.state.trim() || !form.pincode.trim()) {
+      setError('Please provide a complete delivery address.')
+      return false
+    }
+    if (form.payment === 'upi' && (grandTotal < UPI_MIN_AMOUNT || grandTotal > UPI_MAX_AMOUNT)) {
+      setError(
+        `UPI payments must be between ${formatCurrency(UPI_MIN_AMOUNT)} and ${formatCurrency(UPI_MAX_AMOUNT)}. ` +
+          'Choose Cash on Delivery instead, or adjust your cart.'
+      )
+      return false
+    }
+    return true
+  }
 
   const placeOrder = async () => {
     setError(null)
+    if (!validateBeforeSubmit()) return
     setPlacing(true)
     try {
+      if (!checkoutRefRef.current) checkoutRefRef.current = crypto.randomUUID()
+      const checkoutRef = checkoutRefRef.current
+
       if (selectedAddressId === 'new' && saveAddress) {
         await userApi.addAddress({
           addressLine1: form.address,
@@ -94,7 +137,38 @@ export default function Checkout() {
         }).catch(() => {}) // best-effort — don't block checkout on this
       }
 
+      const method = PAYMENT_METHOD_MAP[form.payment]
+
+      // Validate/create the payment intent FIRST, before any order exists — if the gateway
+      // rejects it (e.g. amount out of range), nothing is ever persisted as an order. checkoutRef
+      // is left untouched on failure, so clicking "Place Order" again safely retries this same
+      // attempt instead of creating a duplicate (see PaymentServiceImpl#initiatePayment).
+      const payment = await paymentApi.initiate({
+        checkoutRef,
+        userId: user.id,
+        amount: grandTotal,
+        currency: 'INR',
+        method,
+        ...(method === 'UPI' ? {
+          firstName: form.firstName,
+          lastName: form.lastName.trim() || form.firstName,
+          mobile: form.phone.replace(/[^0-9]/g, ''),
+          email: form.email,
+        } : {}),
+      })
+
+      if (method === 'UPI' && !payment.upiIntent) {
+        // The gateway rejected intent creation outright (e.g. duplicate invoice, IP not
+        // whitelisted, amount out of range) — surface its own message, not a generic one. No
+        // order was created for this attempt.
+        throw new Error(payment.failureReason || 'Could not start UPI payment. Please choose a different payment method.')
+      }
+
+      // Intent accepted (or COD/other with no gateway step) — only now is it safe to create the
+      // order. idempotencyKey is the same checkoutRef, so even a network retry of this call can't
+      // create a second order (see OrderServiceImpl#createOrder).
       const order = await orderApi.create({
+        idempotencyKey: checkoutRef,
         userId: user.id,
         subTotal: total,
         gstAmount: tax,
@@ -123,20 +197,16 @@ export default function Checkout() {
         })),
       })
 
-      const method = PAYMENT_METHOD_MAP[form.payment]
-      const payment = await paymentApi.initiate({
-        orderId: order.orderId,
-        userId: user.id,
-        amount: grandTotal,
-        currency: 'INR',
-        method,
-        ...(method === 'UPI' ? {
-          firstName: form.firstName,
-          lastName: form.lastName.trim() || form.firstName,
-          mobile: form.phone.replace(/[^0-9]/g, ''),
-          email: form.email,
-        } : {}),
-      })
+      // Attach the real order to the already-accepted payment intent.
+      await paymentApi.linkOrder(payment.paymentId, order.orderId)
+
+      if (method === 'COD') {
+        // No payment collected now — the order stays unpaid (order.status starts at CREATED)
+        // until whoever collects the cash on delivery marks it paid.
+        await clearCart()
+        navigate(`/orders/${order.orderId}`, { state: { justPlaced: true } })
+        return
+      }
 
       if (method !== 'UPI') {
         // No real gateway integration for these yet — simulate an immediate successful payment.
@@ -146,11 +216,6 @@ export default function Checkout() {
         return
       }
 
-      if (!payment.upiIntent) {
-        // The gateway rejected intent creation outright (e.g. duplicate invoice, IP not
-        // whitelisted, amount below minimum) — surface its own message, not a generic one.
-        throw new Error(payment.failureReason || 'Could not start UPI payment. Please choose a different payment method.')
-      }
       const qrDataUrl = await QRCode.toDataURL(payment.upiIntent)
       setUpiPayment({ orderId: order.orderId, paymentId: payment.paymentId, qrDataUrl })
       setUpiStatus('processing')
@@ -358,8 +423,8 @@ export default function Checkout() {
                 <h3>Payment Method</h3>
                 <div className="payment-options">
                   {[
-                    // { value: 'cod', label: 'Cash on Delivery', icon: 'fas fa-money-bill-wave' },
                     { value: 'upi', label: 'UPI / Qr Code', icon: 'fas fa-mobile-alt' },
+                  //  { value: 'cod', label: 'Cash on Delivery', icon: 'fas fa-money-bill-wave' },
                     // { value: 'card', label: 'Credit / Debit Card', icon: 'fas fa-credit-card' },
                     // { value: 'netbanking', label: 'Net Banking', icon: 'fas fa-university' },
                   ].map(opt => (
@@ -373,6 +438,8 @@ export default function Checkout() {
                 <p className="auth-hint" style={{ marginTop: -8 }}>
                   {form.payment === 'upi'
                     ? "You'll be shown a UPI QR code to scan and pay with any UPI app."
+                    // : form.payment === 'cod'
+                    // ? 'Pay with cash when your order is delivered.'
                     : "This payment method doesn't have a live gateway yet — your order will be confirmed immediately."}
                 </p>
               </div>
