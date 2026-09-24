@@ -72,6 +72,25 @@
   color: var(--text);
 }
 
+.auth-field input.invalid {
+  border-color: #c0392b;
+}
+
+.auth-field-error,
+.auth-field-help {
+  display: block;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.auth-field-error {
+  color: #c0392b;
+}
+
+.auth-field-help {
+  color: var(--gray);
+}
+
 .auth-error {
   background: #fdecea;
   color: #c0392b;
