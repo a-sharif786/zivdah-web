@@ -23,15 +23,23 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const onExpired = () => setAuth(null);
+    // Fired by api/client.js after it silently rotates the access/refresh tokens.
+    const onRefreshed = () => setAuth(readStoredAuth());
     window.addEventListener('zivdah-auth-expired', onExpired);
-    return () => window.removeEventListener('zivdah-auth-expired', onExpired);
+    window.addEventListener('zivdah-auth-refreshed', onRefreshed);
+    return () => {
+      window.removeEventListener('zivdah-auth-expired', onExpired);
+      window.removeEventListener('zivdah-auth-refreshed', onRefreshed);
+    };
   }, []);
 
-  // Accepts a LoginResponseDTO { id, mobile, name, email, role, token } — the shape
-  // returned identically by /login, /verify-otp, and /verify-registration-otp.
+  // Accepts a LoginResponseDTO { id, mobile, name, email, role, token, accessToken,
+  // refreshToken, ... } — the shape returned identically by /login, /verify-otp, and
+  // /verify-registration-otp.
   const login = useCallback((response) => {
     const nextAuth = {
-      token: response.token,
+      token: response.accessToken ?? response.token,
+      refreshToken: response.refreshToken,
       user: {
         id: response.id,
         name: response.name,
@@ -57,12 +65,14 @@ export function AuthProvider({ children }) {
     // registration + the notification permission prompt, so by the time its promise
     // resolves localStorage (and the request interceptor's Authorization header) would
     // otherwise already be empty, and the call below would 401.
-    const authToken = readStoredAuth()?.token;
+    const stored = readStoredAuth();
+    const authToken = stored?.token;
+    const refreshToken = stored?.refreshToken;
     // Only deactivates this browser's push registration — other signed-in devices/browsers
     // stay registered. Resolves from Firebase's local cache, so this doesn't re-prompt for
     // permission; best-effort either way — clear the local session regardless of outcome.
     getFcmToken()
-      .then((token) => authApi.logout(token ?? undefined, authToken))
+      .then((token) => authApi.logout(token ?? undefined, authToken, refreshToken))
       .catch(() => {});
     localStorage.removeItem(AUTH_STORAGE_KEY);
     setAuth(null);

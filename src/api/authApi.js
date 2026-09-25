@@ -23,11 +23,13 @@ export const authApi = {
   // authToken overrides the Authorization header explicitly — the caller (AuthContext)
   // clears localStorage right after kicking this off, so by the time this actually sends
   // the request interceptor's own localStorage read may already be empty.
-  logout: (fcmToken, authToken) =>
+  // refreshToken scopes the server-side revocation to this browser's session; without it
+  // the backend revokes every refresh token the user holds.
+  logout: (fcmToken, authToken, refreshToken) =>
     apiClient
       .post(
         `${BASE}/logout`,
-        fcmToken ? { fcmToken } : {},
+        { ...(fcmToken ? { fcmToken } : {}), ...(refreshToken ? { refreshToken } : {}) },
         authToken ? { headers: { Authorization: `Bearer ${authToken}` } } : undefined
       )
       .then((r) => r.data),

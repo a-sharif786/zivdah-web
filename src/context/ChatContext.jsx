@@ -1,6 +1,7 @@
 import { createContext, useContext, useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import { useAuth } from './AuthContext';
 import { chatApi, buildChatWsUrl } from '../api/chatApi';
+import { getFreshAccessToken } from '../api/client';
 
 const ChatContext = createContext();
 
@@ -91,6 +92,7 @@ function normalizeIncomingMessage(payload, frameType) {
 
 export function ChatProvider({ children }) {
   const { isAuthenticated, token } = useAuth();
+  const hasToken = !!token;
 
   const [screen, setScreen] = useState('CHOICE'); // CHOICE | BOT | HUMAN | RATING
   const [mode, setMode] = useState('BOT'); // BOT | HUMAN | CLOSED
@@ -336,7 +338,7 @@ export function ChatProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    if (mode !== 'HUMAN' || conversationId == null || !token) {
+    if (mode !== 'HUMAN' || conversationId == null || !hasToken) {
       if (socketRef.current) {
         socketRef.current.onclose = null;
         socketRef.current.close();
@@ -384,12 +386,20 @@ export function ChatProvider({ children }) {
       reconnectTimerRef.current = setTimeout(open, delay); // eslint-disable-line no-use-before-define
     };
 
-    function open() {
+    async function open() {
       if (cancelled) return;
       setConnectionStatus(reconnectAttemptRef.current > 0 ? 'RECONNECTING' : 'CONNECTING');
+      // Read at connect time (not the effect's closure) so a reconnect after the 15-min
+      // access token has expired uses a refreshed one instead of failing the handshake.
+      const freshToken = await getFreshAccessToken();
+      if (cancelled) return;
+      if (!freshToken) {
+        setConnectionStatus('FAILED');
+        return;
+      }
       let ws;
       try {
-        ws = new WebSocket(buildChatWsUrl(conversationId, token));
+        ws = new WebSocket(buildChatWsUrl(conversationId, freshToken));
       } catch {
         scheduleReconnect();
         return;
@@ -438,8 +448,10 @@ export function ChatProvider({ children }) {
       }
     };
     // reconnectNonce is a write-only trigger for manual retry(); attempt bookkeeping lives in refs.
+    // hasToken, not token: a silent token refresh must not tear down a live socket (the
+    // server only checks the token at handshake time).
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, conversationId, token, reconnectNonce, clearReconnectTimer, handleFrame]);
+  }, [mode, conversationId, hasToken, reconnectNonce, clearReconnectTimer, handleFrame]);
 
   const reconnect = useCallback(() => {
     reconnectAttemptRef.current = 0;
