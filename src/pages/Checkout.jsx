@@ -109,6 +109,13 @@ export default function Checkout() {
       setError('Please provide a complete delivery address.')
       return false
     }
+    // Only UPI (EcomWorldPay QR) and COD are real payment flows. Card/net banking used to
+    // "simulate" success by having the browser mark its own payment successful — the server now
+    // allows that only for an admin, so those methods (already hidden below) are refused here.
+    if (form.payment !== 'upi' && form.payment !== 'cod') {
+      setError('This payment method is not available. Please choose another payment method.')
+      return false
+    }
     if (form.payment === 'upi' && (grandTotal < UPI_MIN_AMOUNT || grandTotal > UPI_MAX_AMOUNT)) {
       setError(
         `UPI payments must be between ${formatCurrency(UPI_MIN_AMOUNT)} and ${formatCurrency(UPI_MAX_AMOUNT)}. ` +
@@ -203,14 +210,6 @@ export default function Checkout() {
       if (method === 'COD') {
         // No payment collected now — the order stays unpaid (order.status starts at CREATED)
         // until whoever collects the cash on delivery marks it paid.
-        await clearCart()
-        navigate(`/orders/${order.orderId}`, { state: { justPlaced: true } })
-        return
-      }
-
-      if (method !== 'UPI') {
-        // No real gateway integration for these yet — simulate an immediate successful payment.
-        await paymentApi.markSuccess(payment.paymentId)
         await clearCart()
         navigate(`/orders/${order.orderId}`, { state: { justPlaced: true } })
         return

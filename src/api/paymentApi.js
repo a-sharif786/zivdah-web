@@ -14,9 +14,8 @@ export const paymentApi = {
 
   getByOrder: (orderId) => apiClient.get(`${BASE}/order/${orderId}`).then((r) => r.data),
 
-  markSuccess: (paymentId) => apiClient.put(`${BASE}/success/${paymentId}`).then((r) => r.data),
-
-  markFailed: (paymentId) => apiClient.put(`${BASE}/failed/${paymentId}`).then((r) => r.data),
+  // (markSuccess / markFailed removed: they're ADMIN-only manual overrides on the server — a
+  // customer's browser must never mark its own payment's outcome. See zivdah-admin's paymentApi.)
 
   // Re-polls EcomWorldPay's status-check API for a UPI payment stuck in PROCESSING (the async
   // callback can be missed/delayed) — see zivdah-payment-service PaymentController.
