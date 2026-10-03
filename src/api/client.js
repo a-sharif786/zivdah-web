@@ -58,11 +58,18 @@ function refreshAccessToken() {
     )
       .then((res) => {
         const data = res.data?.data;
-        const nextAuth = { ...readStoredAuth(), token: data.accessToken, refreshToken: data.refreshToken };
+        // The backend's LoginResponseDTO carries the access token as `token` (there is no
+        // `accessToken` field). Storing an undefined token here silently logged the user out
+        // at the first refresh (~15 min after login), so fail loudly instead.
+        const accessToken = data?.token;
+        if (!accessToken || !data?.refreshToken) {
+          throw new Error('Refresh response missing tokens');
+        }
+        const nextAuth = { ...readStoredAuth(), token: accessToken, refreshToken: data.refreshToken };
         localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(nextAuth));
         // AuthContext re-reads storage on this so useAuth().token stays current.
         window.dispatchEvent(new Event('zivdah-auth-refreshed'));
-        return data.accessToken;
+        return accessToken;
       })
       .finally(() => {
         refreshPromise = null;

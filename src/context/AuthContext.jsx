@@ -33,12 +33,11 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
-  // Accepts a LoginResponseDTO { id, mobile, name, email, role, token, accessToken,
-  // refreshToken, ... } — the shape returned identically by /login, /verify-otp, and
-  // /verify-registration-otp.
+  // Accepts a LoginResponseDTO { id, mobile, name, email, role, token, refreshToken, ... } —
+  // the shape returned identically by /login, /verify-otp, and /verify-registration-otp.
   const login = useCallback((response) => {
     const nextAuth = {
-      token: response.accessToken ?? response.token,
+      token: response.token,
       refreshToken: response.refreshToken,
       user: {
         id: response.id,
